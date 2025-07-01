@@ -41,7 +41,9 @@ Do not generate a query for greetings like "hi", "hello", or "how are you".
 
 {schema_str}
 
-User question: {question}
+User question: {user_question}
+Note: Use partial and case-insensitive matches for name-related queries (e.g., use WHERE name LIKE '%input%').
+
 SQL query:
 """
 
