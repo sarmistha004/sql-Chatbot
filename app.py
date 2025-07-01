@@ -1,10 +1,13 @@
 import streamlit as st
 import mysql.connector
-import openai
-import os
+from openai import OpenAI
 
-# 🧠 Load OpenAI API key from secrets
-openai.api_key = st.secrets["OPENAI_API_KEY"]
+# 💡 Streamlit UI setup
+st.set_page_config(page_title="SQL Chatbot", layout="centered")
+st.title("🧠 SQL Chatbot with MySQL + OpenAI")
+
+# 🔐 Load OpenAI API key from secrets
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 # 🛢️ Connect to MySQL
 conn = mysql.connector.connect(
@@ -16,7 +19,7 @@ conn = mysql.connector.connect(
 )
 cursor = conn.cursor()
 
-# 📋 Get schema
+# 📋 Function to get schema
 def get_schema():
     cursor.execute("SHOW TABLES")
     tables = cursor.fetchall()
@@ -28,7 +31,16 @@ def get_schema():
 
 schema = get_schema()
 
-# 🤖 Generate SQL using OpenAI
+# 📤 Function to show all table names
+def display_tables():
+    if not schema:
+        return "❌ No tables found in the database."
+    table_list = "📋 **Tables in your database:**\n"
+    for t in schema:
+        table_list += f"• `{t}` with columns: {', '.join(schema[t])}\n"
+    return table_list
+
+# 🧠 GPT: Generate SQL
 def generate_sql_query(question):
     schema_str = ""
     for table, cols in schema.items():
@@ -37,25 +49,28 @@ def generate_sql_query(question):
     prompt = f"""
 You are an expert SQL assistant. Based on the schema below, write a SQL query to answer the user's question.
 Only return the SQL query without explanation.
-Do not generate a query for greetings like "hi", "hello", or "how are you".
 
 {schema_str}
 
 User question: {question}
 SQL query:
 """
+    try:
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        return None
 
-    response = openai.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0
-    )
-
-    return response.choices[0].message.content.strip()
-
-# 🔍 Run SQL and return result
+# ⚙️ Execute query
 def execute_sql_and_respond(question):
     sql_query = generate_sql_query(question)
+    if not sql_query or "select" not in sql_query.lower():
+        return "❗ I couldn't understand your question or generate a valid SQL. Try rephrasing it or asking something about the database."
+
     try:
         cursor.execute(sql_query)
         results = cursor.fetchall()
@@ -68,19 +83,15 @@ def execute_sql_and_respond(question):
     except Exception as e:
         return f"❌ Error running query:\n`{sql_query}`\n\n{e}"
 
-# 🌐 Streamlit UI
-st.set_page_config(page_title="SQL Chatbot", layout="centered")
-st.title("🧠 SQL Chatbot with MySQL + OpenAI")
-
+# 🔎 User Interaction
 user_question = st.text_input("Ask a question about your database 👇")
 
-# 💡 Greeting filter
-greetings = ["hi", "hello", "hey", "how are you", "hii", "yo", "hlo", ""]
+if user_question:
+    if "show tables" in user_question.lower() or "list tables" in user_question.lower():
+        st.markdown(display_tables())
+    else:
+        st.markdown("💬 **Your Question:** " + user_question)
+        with st.spinner("Generating SQL & fetching result..."):
+            output = execute_sql_and_respond(user_question)
+            st.markdown(output)
 
-if user_question.lower().strip() in greetings:
-    st.warning("⚠️ Please ask a valid question related to your database.")
-elif user_question:
-    st.markdown("💬 **Your Question:** " + user_question)
-    with st.spinner("Generating SQL & fetching result..."):
-        output = execute_sql_and_respond(user_question)
-        st.markdown(output)
