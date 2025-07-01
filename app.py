@@ -43,7 +43,6 @@ Based on the schema below, write a SQL query to answer the user's question.
 Only return the SQL query without explanation.
 Do not generate a query for greetings like "hi", "hello", or "how are you".
 Only return the SQL query without explanation.
-When matching text like names or emails, always use case-insensitive LIKE queries (e.g. LOWER(column) LIKE '%value%').
 
 {schema_str}
 
