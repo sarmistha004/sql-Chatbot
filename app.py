@@ -43,6 +43,8 @@ Based on the schema below, write a SQL query to answer the user's question.
 Only return the SQL query without explanation.
 Do not generate a query for greetings like "hi", "hello", or "how are you".
 Only return the SQL query without explanation.
+Always ensure WHERE clause comparisons use LOWER(TRIM(column)) for string values.
+Use exact table and column names. Do not use placeholders like %value%.
 
 {schema_str}
 
