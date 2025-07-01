@@ -40,11 +40,10 @@ def generate_sql_query(question):
 You are an expert SQL assistant. The database name is `{db_name}`.
 Based on the schema below, write a SQL query to answer the user's question.
 Only return the SQL query without explanation.
-Do not generate a query for greetings like "hi", "hello", or "how are you".
-Use exact table and column names from the schema.
+
 When filtering string values in WHERE clause, always use:
-LOWER(TRIM(column)) = 'value'
-Avoid using LIKE or %value% unless the question explicitly asks for partial matching.
+LOWER(TRIM(column)) = LOWER(TRIM('value'))
+Use LIKE only if partial matching is explicitly asked.
 
 {schema_str}
 
