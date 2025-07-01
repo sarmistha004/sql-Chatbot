@@ -34,8 +34,12 @@ def generate_sql_query(question):
     for table, cols in schema.items():
         schema_str += f"Table `{table}` has columns: {', '.join(cols)}\n"
 
+    # ✅ Define the correct DB name
+    db_name = "sql12787470"
+
     prompt = f"""
-You are an expert SQL assistant. Based on the schema below, write a SQL query to answer the user's question.
+You are an expert SQL assistant. The database name is `{db_name}`.
+Based on the schema below, write a SQL query to answer the user's question.
 Only return the SQL query without explanation.
 Do not generate a query for greetings like "hi", "hello", or "how are you".
 Only return the SQL query without explanation.
