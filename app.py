@@ -47,7 +47,7 @@ Use exact table and column names from the schema. Avoid using placeholders like 
 
 {schema_str}
 
-User question: {user_question}
+User question: {question}
 Make sure string comparisons are case-insensitive and whitespace-insensitive using LOWER(TRIM()).
 SQL query:
 """
