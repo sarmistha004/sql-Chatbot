@@ -1,9 +1,8 @@
 import streamlit as st
 import mysql.connector
 import openai
-import os
 
-# 🧠 Load OpenAI API key from secrets
+# 🔐 Load OpenAI API key from Streamlit secrets
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 # 🛢️ Connect to MySQL
@@ -37,15 +36,17 @@ def generate_sql_query(question):
     db_name = "sql12787470"
 
     prompt = f"""
-You are an expert SQL assistant. The database name is `{db_name}`.
-Based on the schema below, write a SQL query to answer the user's question.
-Only return the SQL query without explanation.
-Do not generate queries for greetings like "hi", "hello", or "how are you".
+You are an expert MySQL assistant for the `{db_name}` database.
+Based on the schema provided below, write an accurate SQL query to answer the user's question.
+ONLY return the SQL query — do NOT add explanations or natural language.
 
-When filtering strings in the WHERE clause:
-Always compare using LOWER(TRIM(REPLACE(column, '\\r', ''))) = LOWER(TRIM(REPLACE('value', '\\r', '')))
-Avoid LIKE and avoid using placeholders like %value%.
+⚠️ VERY IMPORTANT:
+- Always use this exact format for filtering strings:
+  LOWER(TRIM(REPLACE(column, '\\r', ''))) = LOWER(TRIM(REPLACE('value', '\\r', '')))
+- Do NOT use LIKE or %.
+- Do NOT generate queries for greetings like "hi", "hello", "how are you", etc.
 
+📊 SCHEMA:
 {schema_str}
 
 User question: {question}
@@ -63,15 +64,27 @@ SQL query:
 # 🔍 Run SQL and return result
 def execute_sql_and_respond(question):
     sql_query = generate_sql_query(question)
+
+    if not sql_query.lower().startswith("select"):
+        return f"❌ Could not generate a valid SQL query. Please try rephrasing."
+
     try:
         cursor.execute(sql_query)
         results = cursor.fetchall()
+
         if not results:
             return f"🔍 SQL: `{sql_query}`\n\n🤷 No data found."
-        response = f"🔍 SQL: `{sql_query}`\n\n📊 Result:\n"
+
+        # Return friendly summary for COUNT/SUM/AVG
+        if any(func in sql_query.lower() for func in ["count", "sum", "avg", "max", "min"]):
+            return f"🔍 SQL: `{sql_query}`\n\n📊 Result: **{results[0][0]}**"
+
+        # Default tabular response
+        response = f"🔍 SQL: `{sql_query}`\n\n📊 Results:\n"
         for row in results:
             response += " • " + ", ".join(str(i) for i in row) + "\n"
         return response
+
     except Exception as e:
         return f"❌ Error running query:\n`{sql_query}`\n\n{e}"
 
