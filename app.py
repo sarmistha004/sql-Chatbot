@@ -38,7 +38,9 @@ def generate_sql_query(question):
 You are an expert SQL assistant. Based on the schema below, write a SQL query to answer the user's question.
 Only return the SQL query without explanation.
 Do not generate a query for greetings like "hi", "hello", or "how are you".
-Only match full names — do not match substrings. For example, if the question is about 'Amit', do NOT match 'Pramit' or 'Samit'. Use WHERE name = 'Amit' or exact matches only when the question implies so.
+• Match names exactly by trimming spaces and ignoring case.
+• For example, match 'Amit', ' AMIT', 'amit ', etc., all as 'Amit'.
+• Use LOWER(TRIM(name)) = 'amit' when needed.
 
 {schema_str}
 
