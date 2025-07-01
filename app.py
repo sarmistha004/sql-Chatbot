@@ -33,14 +33,17 @@ def generate_sql_query(user_question, schema_dict):
     for table, cols in schema_dict.items():
         schema_str += f"Table {table} has columns: {', '.join(cols)}\n"
 
+    db_name = "sql12787470"
+
     prompt = f"""
-You are an expert SQL assistant. Based on the schema below, write a SQL query to answer the user's question.
+You are an expert SQL assistant working with a MySQL database named `{db_name}`. Based on the schema below, write a SQL query to answer the user's question.
 Only return the SQL query without explanation.
 Do not generate a query for greetings like "hi", "hello", or "how are you".
 When filtering strings in WHERE clause, always use:
 LOWER(TRIM(column)) LIKE LOWER('%value%') 
 instead of = or plain LIKE.
 
+Here is the database schema:
 {schema_str}
 
 User question: {user_question}
