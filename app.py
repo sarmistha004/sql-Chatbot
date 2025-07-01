@@ -34,7 +34,6 @@ def generate_sql_query(question):
     for table, cols in schema.items():
         schema_str += f"Table `{table}` has columns: {', '.join(cols)}\n"
 
-    # ✅ Define the correct DB name
     db_name = "sql12787470"
 
     prompt = f"""
@@ -42,10 +41,10 @@ You are an expert SQL assistant. The database name is `{db_name}`.
 Based on the schema below, write a SQL query to answer the user's question.
 Only return the SQL query without explanation.
 Do not generate a query for greetings like "hi", "hello", or "how are you".
-Only return the SQL query without explanation.
-When filtering strings in WHERE clause, always use:
-LOWER(TRIM(column)) LIKE '%value%' 
-instead of = or plain LIKE 'value'.
+Use exact table and column names from the schema.
+When filtering string values in WHERE clause, always use:
+LOWER(TRIM(column)) = 'value'
+Avoid using LIKE or %value% unless the question explicitly asks for partial matching.
 
 {schema_str}
 
@@ -92,5 +91,3 @@ elif user_question:
     with st.spinner("Generating SQL & fetching result..."):
         output = execute_sql_and_respond(user_question)
         st.markdown(output)
-
-
