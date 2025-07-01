@@ -43,12 +43,10 @@ Based on the schema below, write a SQL query to answer the user's question.
 Only return the SQL query without explanation.
 Do not generate a query for greetings like "hi", "hello", or "how are you".
 Only return the SQL query without explanation.
-Use exact table and column names from the schema. Avoid using placeholders like %value%.
 
 {schema_str}
 
 User question: {question}
-Make sure string comparisons are case-insensitive and whitespace-insensitive using LOWER(TRIM()).
 SQL query:
 """
 
