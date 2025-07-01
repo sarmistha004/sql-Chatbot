@@ -3,8 +3,8 @@ import mysql.connector
 import openai
 import os
 
-# 🔐 Load API Key
-openai.api_key = st.secrets["OPENAI_API_KEY"]
+# 🔐 Load OpenAI API key (use secrets or env variable)
+openai.api_key = os.getenv("OPENAI_API_KEY") or st.secrets.get("OPENAI_API_KEY")
 
 # ✅ Connect to MySQL
 conn = mysql.connector.connect(
@@ -16,36 +16,34 @@ conn = mysql.connector.connect(
 )
 cursor = conn.cursor()
 
-# ✅ Get Schema
-def get_schema():
-    cursor.execute("SHOW TABLES")
+# ✅ Get table schema
+def get_schema(cursor):
+    cursor.execute("SHOW TABLES;")
     tables = cursor.fetchall()
     schema = {}
-    for (table,) in tables:
-        cursor.execute(f"DESCRIBE {table}")
-        schema[table] = [col[0] for col in cursor.fetchall()]
+    for (table_name,) in tables:
+        cursor.execute(f"DESCRIBE {table_name}")
+        columns = cursor.fetchall()
+        schema[table_name] = [col[0] for col in columns]
     return schema
 
-schema = get_schema()
-
-# ✅ Generate SQL with OpenAI
-def generate_sql_query(question):
+# ✅ Generate SQL using GPT
+def generate_sql_query(user_question, schema_dict):
     schema_str = ""
-    for table, cols in schema.items():
+    for table, cols in schema_dict.items():
         schema_str += f"Table {table} has columns: {', '.join(cols)}\n"
 
     prompt = f"""
 You are an expert SQL assistant. Based on the schema below, write a SQL query to answer the user's question.
 Only return the SQL query without explanation.
-
-Use strict string match for name comparisons using:
-LOWER(TRIM(column)) = LOWER('value')
-
-Avoid LIKE and fuzzy matches.
+Do not generate a query for greetings like "hi", "hello", or "how are you".
+When filtering strings in WHERE clause, always use:
+LOWER(TRIM(column)) LIKE LOWER('%value%') 
+instead of = or plain LIKE.
 
 {schema_str}
 
-User question: {question}
+User question: {user_question}
 SQL query:
 """
 
@@ -57,60 +55,38 @@ SQL query:
 
     return response.choices[0].message.content.strip().strip("`")
 
-# ✅ Execute SQL
+# ✅ Execute SQL and return formatted response
 def execute_sql_and_respond(sql_query):
     try:
         cursor.execute(sql_query)
         results = cursor.fetchall()
-
         if not results:
             return "🤷 No data found for your query."
 
-        # If aggregate, return clean
-        if any(kw in sql_query.lower() for kw in ["count", "avg", "sum", "min", "max"]):
-            return f"📊 Answer: **{results[0][0]}**"
-
-        # Return rows
-        response = "📊 Results:\n"
+        response = "📊 Result:\n"
         for row in results:
             response += " • " + ", ".join(str(i) for i in row) + "\n"
         return response.strip()
 
     except Exception as e:
-        return f"❌ SQL Error:\n{e}"
-
-# ✅ Wipe all data (truncate)
-def clear_all_data():
-    try:
-        cursor.execute("SET FOREIGN_KEY_CHECKS = 0;")
-        cursor.execute("SHOW TABLES")
-        tables = cursor.fetchall()
-        for (table,) in tables:
-            cursor.execute(f"TRUNCATE TABLE {table}")
-        cursor.execute("SET FOREIGN_KEY_CHECKS = 1;")
-        conn.commit()
-        return "🧹 All data deleted from your database!"
-    except Exception as e:
-        return f"❌ Error deleting data:\n{e}"
+        return f"❌ SQL Error: {str(e)}"
 
 # ✅ Streamlit App UI
 st.set_page_config(page_title="SQL Chatbot", layout="centered")
-st.title("🧠 SQL Chatbot with MySQL + OpenAI")
-st.markdown("Ask questions about your database in natural language!")
+st.title("🧠 SQL Chatbot with OpenAI + MySQL")
 
-# 🔘 Optional: Clear DB
-if st.button("🧹 Clear All Table Data"):
-    msg = clear_all_data()
-    st.success(msg)
+st.markdown("Ask any question related to your database:")
 
-# 💬 Ask a question
-user_question = st.text_input("💬 Your Question")
+# ✅ Input from user
+user_question = st.text_input("💬 Enter your question:")
 
-# 🚀 Process
-if user_question:
-    with st.spinner("Generating SQL and fetching results..."):
-        sql_query = generate_sql_query(user_question)
-        st.code(sql_query, language="sql")
-        response = execute_sql_and_respond(sql_query)
-        st.markdown(response)
+if user_question.strip().lower() in ["", "hi", "hello", "how are you"]:
+    st.warning("⚠️ Please ask a valid question related to your database.")
+elif user_question:
+    schema = get_schema(cursor)
+    with st.spinner("⏳ Generating and executing SQL query..."):
+        sql = generate_sql_query(user_question, schema)
+        st.code(sql, language="sql")
+        answer = execute_sql_and_respond(sql)
+        st.markdown(answer)
 
