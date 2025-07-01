@@ -43,8 +43,9 @@ Based on the schema below, write a SQL query to answer the user's question.
 Only return the SQL query without explanation.
 Do not generate a query for greetings like "hi", "hello", or "how are you".
 Only return the SQL query without explanation.
-Always use LOWER(TRIM(column)) and LIKE for case-insensitive and space-insensitive comparison of string values.
-Use exact table and column names. Do not use placeholders like %value%.
+When filtering strings in WHERE clause, always use:
+LOWER(TRIM(column)) LIKE '%value%' 
+instead of = or plain LIKE 'value'.
 
 {schema_str}
 
