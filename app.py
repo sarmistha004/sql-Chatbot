@@ -1,26 +1,21 @@
 import streamlit as st
 import mysql.connector
 import openai
-import os
 
-# 🌐 Page config
-st.set_page_config(page_title="SQL Chatbot", layout="centered")
-st.title("🧠 SQL Chatbot with MySQL + OpenAI")
-
-# 🔐 Load OpenAI API Key from Streamlit secrets
+# 📌 Set OpenAI API Key securely
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
-# 🔗 Connect to MySQL
+# ✅ Connect to MySQL database
 conn = mysql.connector.connect(
-    host='sql12.freesqldatabase.com',
+    host="sql12.freesqldatabase.com",
     port=3306,
-    user='sql12787470',
-    password='Tbsv7vtsVi',
-    database='sql12787470'
+    user="sql12787470",
+    password="Tbsv7vtsVi",
+    database="sql12787470"
 )
 cursor = conn.cursor()
 
-# 📋 Get schema from MySQL database
+# 🔎 Load database schema
 def get_schema():
     cursor.execute("SHOW TABLES")
     tables = cursor.fetchall()
@@ -32,7 +27,15 @@ def get_schema():
 
 schema = get_schema()
 
-# 🤖 Generate SQL query from user question
+# 👀 Display available tables in the sidebar (or UI)
+with st.expander("📂 View Available Tables in Database"):
+    if schema:
+        for table, columns in schema.items():
+            st.markdown(f"**🔸 {table}**: {', '.join(columns)}")
+    else:
+        st.error("❌ No tables found in the database.")
+
+# 🤖 Generate SQL query using GPT
 def generate_sql_query(question):
     schema_str = ""
     for table, cols in schema.items():
@@ -47,16 +50,14 @@ Only return the SQL query without explanation.
 User question: {question}
 SQL query:
 """
-
     response = openai.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": prompt}],
         temperature=0
     )
+    return response.choices[0].message.content.strip()
 
-    return response.choices[0].message.content.strip().strip("`")
-
-# 🧠 Execute the query and display results
+# ⚙️ Execute SQL and return result
 def execute_sql_and_respond(question):
     sql_query = generate_sql_query(question)
     try:
@@ -69,9 +70,12 @@ def execute_sql_and_respond(question):
             response += " • " + ", ".join(str(i) for i in row) + "\n"
         return response
     except Exception as e:
-        return f"❌ Error running query:\n`{sql_query}`\n\n{e}"
+        return f"❌ Error executing query:\n`{sql_query}`\n\n{e}"
 
-# 💬 Streamlit input
+# 🎯 Main UI
+st.set_page_config(page_title="SQL Chatbot", layout="centered")
+st.title("🧠 SQL Chatbot with MySQL + OpenAI")
+
 user_question = st.text_input("Ask a question about your database 👇")
 
 if user_question:
@@ -79,3 +83,4 @@ if user_question:
     with st.spinner("Generating SQL & fetching result..."):
         output = execute_sql_and_respond(user_question)
         st.markdown(output)
+
