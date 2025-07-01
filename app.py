@@ -38,8 +38,8 @@ def generate_sql_query(question):
 You are an expert SQL assistant. Based on the schema below, write a SQL query to answer the user's question.
 Only return the SQL query without explanation.
 Do not generate a query for greetings like "hi", "hello", or "how are you".
-When matching names or text fields, always normalize using: TRIM(LOWER(column)) = 'value'.
 Only return the SQL query without explanation.
+When matching text like names or emails, always use case-insensitive LIKE queries (e.g. LOWER(column) LIKE '%value%').
 
 {schema_str}
 
