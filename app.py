@@ -44,6 +44,7 @@ Only return the SQL query without explanation.
 {schema_str}
 
 User question: {user_question}
+Make sure string comparisons are case-insensitive and whitespace-insensitive using LOWER(TRIM()).
 SQL query:
 """
 
