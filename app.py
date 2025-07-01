@@ -38,9 +38,8 @@ def generate_sql_query(question):
 You are an expert SQL assistant. Based on the schema below, write a SQL query to answer the user's question.
 Only return the SQL query without explanation.
 Do not generate a query for greetings like "hi", "hello", or "how are you".
-• Match names exactly by trimming spaces and ignoring case.
-• For example, match 'Amit', ' AMIT', 'amit ', etc., all as 'Amit'.
-• Use LOWER(TRIM(name)) = 'amit' when needed.
+When matching names or text fields, always normalize using: TRIM(LOWER(column)) = 'value'.
+Only return the SQL query without explanation.
 
 {schema_str}
 
