@@ -76,6 +76,17 @@ def execute_sql_and_respond(sql_query):
 
 # ✅ Streamlit App UI
 st.set_page_config(page_title="SQL Chatbot", layout="centered")
+
+# 👻 Hide the GitHub Fork button
+hide_fork_css = """
+    <style>
+    a[href*="github.com"] {
+        display: none !important;
+    }
+    </style>
+"""
+st.markdown(hide_fork_css, unsafe_allow_html=True)
+
 st.title("🧠 SQL Chatbot with OpenAI + MySQL")
 
 st.markdown("Ask any question related to your database:")
