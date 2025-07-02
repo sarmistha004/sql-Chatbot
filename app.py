@@ -93,13 +93,21 @@ st.markdown("Ask any question related to your database:")
 # ✅ Input from user
 user_question = st.text_input("💬 Enter your question:")
 
-if user_question.strip().lower() in ["", "hi", "hello", "how are you"]:
+user_input = user_question.strip().lower()
+
+if user_input == "":
     st.warning("⚠️ Please ask a valid question related to your database.")
-elif user_question:
+
+elif user_input in ["hi", "hello", "hey"]:
+    st.success("👋 Hi! How can I help you?")
+
+elif "thank" in user_input:
+    st.success("🙏 You're welcome! I'm always here to help you when you need.")
+
+else:
     schema = get_schema(cursor)
     with st.spinner("⏳ Generating and executing SQL query..."):
         sql = generate_sql_query(user_question, schema)
         st.code(sql, language="sql")
         answer = execute_sql_and_respond(sql)
         st.markdown(answer)
-
