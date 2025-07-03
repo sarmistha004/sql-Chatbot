@@ -93,12 +93,17 @@ hide_streamlit_ui = """
 """
 st.markdown(hide_streamlit_ui, unsafe_allow_html=True)
 
-# ✅ Stylish Title
+# ✅ Centered Stylish Title with Tagline
 st.markdown("""
-    <h1 style='font-size: 40px; color:#6C63FF;'>🤖 <span style="font-family:monospace;">DataWhiz</span> 🌛</h1>
-    <p style='font-size: 24px; color: #FF8C00; font-weight: bold;'>Your intelligent SQL assistant at your fingertips 🧠</p>
-    <p style='font-size: 22px; font-weight: bold;'>Ask anything about your MySQL database below:</p>
+    <div style='text-align: center;'>
+        <h1 style='font-size: 44px; color:#6C63FF; font-family:monospace;'>🤖 DataWhiz 💫</h1>
+        <p style='font-size: 24px; color: #FF8C00; font-weight: bold;'>Your intelligent SQL assistant at your fingertips 🧠</p>
+        <p style='font-size: 22px; font-weight: bold;'>Ask anything about your MySQL database below:</p>
+    </div>
+    <br>
+    <p style='font-size: 22px; font-weight: bold;'>💬 <b>Enter your question:</b></p>
 """, unsafe_allow_html=True)
+
 
 # ✅ Dropdown for sample questions
 sample_questions = [
