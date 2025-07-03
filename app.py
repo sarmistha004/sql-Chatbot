@@ -104,11 +104,13 @@ st.markdown("""
 
 # ✅ Dropdown for sample questions
 sample_questions = [
+    "None",
     "How many users are there?",
     "List all users above age 30",
     "Show names and emails of all users",
     "What is the average age of users?",
-    "Show all users registered in June"
+    "Show all users registered in June",
+    "How many users with name Sarmistha?"
 ]
 
 st.markdown("<p style='font-size:20px;'>📜 <b>Select a sample question or type your own:</b></p>", unsafe_allow_html=True)
