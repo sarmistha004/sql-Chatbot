@@ -66,19 +66,19 @@ def execute_sql_and_respond(sql_query):
         if not results:
             return "🤷 No data found for your query."
 
-        response = "<div style='font-size:24px;'>📊 Result:<br>"
+        response = "<div style='font-size:24px; font-family: \"Comic Sans MS\", cursive;'>📊 Result:<br>"
         for row in results:
             response += " • " + ", ".join(str(i) for i in row) + "<br>"
         response += "</div>"
         return response
 
     except Exception as e:
-        return f"<div style='font-size:24px; color:red;'>❌ SQL Error: {str(e)}</div>"
+        return f"<div style='font-size:24px; color:red; font-family: \"Comic Sans MS\", cursive;'>❌ SQL Error: {str(e)}</div>"
 
 # ✅ Streamlit App UI
 st.set_page_config(page_title="DataWhiz - SQL Chatbot", layout="centered")
 
-# 🧽 Hide Streamlit header, footer, and menu
+# 🧽 Hide header/footer + custom CSS
 hide_streamlit_ui = """
     <style>
     header {visibility: hidden;}
@@ -88,6 +88,33 @@ hide_streamlit_ui = """
         font-size: 18px !important;
         padding: 10px !important;
         min-height: 100px !important;
+        font-family: 'Comic Sans MS', cursive;
+    }
+
+    /* ✨ Fade-in animation */
+    .fade-in {
+        animation: fadeIn 2s ease-in;
+    }
+
+    @keyframes fadeIn {
+        0% {opacity: 0;}
+        100% {opacity: 1;}
+    }
+
+    /* ✨ Search button hover effect */
+    .stButton > button {
+        font-family: 'Comic Sans MS', cursive;
+        font-size: 20px;
+        background-color: #6C63FF;
+        color: white;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .stButton > button:hover {
+        background-color: #483D8B;
+        transform: scale(1.05);
+        cursor: pointer;
     }
     </style>
 """
@@ -95,15 +122,14 @@ st.markdown(hide_streamlit_ui, unsafe_allow_html=True)
 
 # ✅ Centered Stylish Title with Tagline
 st.markdown("""
-    <div style='text-align: center;'>
+    <div class='fade-in' style='text-align: center;'>
         <h1 style='font-size: 44px; color:#6C63FF; font-family:monospace;'>🤖 DataWhiz 💫</h1>
-        <p style='font-size: 24px; color: #FF8C00; font-weight: bold;'>Your intelligent SQL assistant at your fingertips 🧠</p>
-        <p style='font-size: 22px; font-weight: bold;'>Ask anything about your MySQL database below:</p>
+        <p style='font-size: 24px; color: deeppink; font-family: "Comic Sans MS", cursive; font-weight: bold;'>Your intelligent SQL assistant at your fingertips 🧠</p>
+        <p style='font-size: 22px; font-family: "Comic Sans MS", cursive; font-weight: bold;'>Ask anything about your MySQL database below:</p>
     </div>
     <br>
-    <p style='font-size: 22px; font-weight: bold;'>💬 <b>Enter your question:</b></p>
+    <p style='font-size: 22px; font-family: "Comic Sans MS", cursive; font-weight: bold;'>💬 <b>Enter your question:</b></p>
 """, unsafe_allow_html=True)
-
 
 # ✅ Dropdown for sample questions
 sample_questions = [
@@ -116,8 +142,7 @@ sample_questions = [
     "Show all users with name Sarmistha."
 ]
 
-st.markdown("<p style='font-size:20px;'>📜 <b>Select a sample question or type your own:</b></p>", unsafe_allow_html=True)
-
+st.markdown("<p style='font-size:20px; font-family: \"Comic Sans MS\", cursive;'>📜 <b>Select a sample question or type your own:</b></p>", unsafe_allow_html=True)
 selected_question = st.selectbox("Choose a question", sample_questions)
 
 # ✅ Text input for custom questions
@@ -129,7 +154,7 @@ user_question = st.text_area(
     key="user_input_box"
 )
 
-# If user types something, it overrides the selected one
+# Use typed input if available
 displayed_question = user_question if user_question.strip() else selected_question
 
 # ✅ Search Button
@@ -139,14 +164,14 @@ search = st.button("🔍 Search")
 if search:
     user_input = displayed_question.strip().lower()
 
-    if user_input == "":
+    if user_input == "" or user_input == "none":
         st.warning("⚠️ Please ask a valid question related to your database.")
 
     elif user_input in ["hi", "hello", "hey"]:
-        st.markdown("<p style='font-size:24px; color:green;'>👋 <b>Hello!</b> How can I help you?</p>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size:24px; color:green; font-family: \"Comic Sans MS\", cursive;'>👋 <b>Hello!</b> How can I help you?</p>", unsafe_allow_html=True)
 
     elif "thank" in user_input:
-        st.markdown("<p style='font-size:24px; color:#2E8B57;'>🙏 You're welcome! I'm always here to help you when you need.</p>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size:24px; color:#2E8B57; font-family: \"Comic Sans MS\", cursive;'>🙏 You're welcome! I'm always here to help you when you need.</p>", unsafe_allow_html=True)
 
     else:
         schema = get_schema(cursor)
@@ -154,19 +179,10 @@ if search:
             sql = generate_sql_query(displayed_question, schema)
             answer = execute_sql_and_respond(sql)
             st.markdown(answer, unsafe_allow_html=True)
-            
-# ✅ Footer Credit
-st.markdown("""
-    <style>
-    .footer {
-        position: fixed;
-        bottom: 10px;
-        left: 10px;
-        font-size: 24px;
-        color: hotpink;
-        font-family: 'Segoe UI', sans-serif;
-    }
-    </style>
-    <div class="footer">Created By Sarmistha</div>
-""", unsafe_allow_html=True)
 
+# ✅ Footer
+st.markdown("""
+    <div style='position: fixed; bottom: 10px; left: 20px;'>
+        <p style='font-size: 24px; color: deeppink; font-family: "Comic Sans MS", cursive;'>Created By Sarmistha</p>
+    </div>
+""", unsafe_allow_html=True)
