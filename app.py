@@ -3,7 +3,7 @@ import mysql.connector
 import openai
 import os
 
-# 🔐 Load OpenAI API key (use secrets or env variable)
+# 🔐 Load OpenAI API key (from env or Streamlit secrets)
 openai.api_key = os.getenv("OPENAI_API_KEY") or st.secrets.get("OPENAI_API_KEY")
 
 # ✅ Connect to MySQL
@@ -58,7 +58,7 @@ SQL query:
 
     return response.choices[0].message.content.strip().strip("`")
 
-# ✅ Execute SQL and return formatted response (HIDES SQL)
+# ✅ Execute SQL and return formatted response
 def execute_sql_and_respond(sql_query):
     try:
         cursor.execute(sql_query)
@@ -75,9 +75,9 @@ def execute_sql_and_respond(sql_query):
         return f"❌ SQL Error: {str(e)}"
 
 # ✅ Streamlit App UI
-st.set_page_config(page_title="SQL Chatbot", layout="centered")
+st.set_page_config(page_title="DataWhiz - SQL Chatbot", layout="centered")
 
-# 🧽 Hide header, footer, and top controls
+# 🧽 Hide Streamlit header, footer, and menu
 hide_streamlit_ui = """
     <style>
     header {visibility: hidden;}
@@ -87,17 +87,17 @@ hide_streamlit_ui = """
 """
 st.markdown(hide_streamlit_ui, unsafe_allow_html=True)
 
-# ✅ Styled Title and Subtitle
+# ✅ Stylish Title
 st.markdown("""
-    <h1 style='font-size: 40px;'>🧠 SQL Chatbot with OpenAI + MySQL</h1>
-    <p style='font-size: 22px; font-weight: bold;'>Ask any question related to your database:</p>
+    <h1 style='font-size: 40px; color:#6C63FF;'>🤖 <span style="font-family:monospace;">DataWhiz</span> 💫</h1>
+    <p style='font-size: 22px; font-weight: bold;'>Ask anything about your MySQL database below:</p>
 """, unsafe_allow_html=True)
 
 # ✅ Styled Input Label
 st.markdown("<p style='font-size:20px;'>💬 <b>Enter your question:</b></p>", unsafe_allow_html=True)
 user_question = st.text_input("")
 
-# ✅ Process Input
+# ✅ Input Processing
 user_input = user_question.strip().lower()
 
 if user_input == "":
@@ -115,4 +115,3 @@ else:
         sql = generate_sql_query(user_question, schema)
         answer = execute_sql_and_respond(sql)
         st.markdown(answer)
-
