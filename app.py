@@ -128,7 +128,7 @@ else:
 
         # ✅ Display final result with bigger font
         st.markdown(f"""
-        <div style='font-size: 20px; font-family: "Segoe UI", sans-serif; color: #333; line-height: 1.6;'>
+        <div style='font-size: 24px; font-family: "Segoe UI", sans-serif; color: #333; line-height: 1.6;'>
         {answer}
         </div>
         """, unsafe_allow_html=True)
