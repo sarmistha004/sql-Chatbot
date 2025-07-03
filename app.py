@@ -83,6 +83,11 @@ hide_streamlit_ui = """
     header {visibility: hidden;}
     footer {visibility: hidden;}
     .css-15zrgzn {display: none;}
+    textarea {
+        font-size: 18px !important;
+        padding: 10px !important;
+        min-height: 100px !important;
+    }
     </style>
 """
 st.markdown(hide_streamlit_ui, unsafe_allow_html=True)
@@ -93,9 +98,15 @@ st.markdown("""
     <p style='font-size: 22px; font-weight: bold;'>Ask anything about your MySQL database below:</p>
 """, unsafe_allow_html=True)
 
-# ✅ Styled Input Label
+# ✅ Input Area
 st.markdown("<p style='font-size:20px;'>💬 <b>Enter your question:</b></p>", unsafe_allow_html=True)
-user_question = st.text_input("")
+
+user_question = st.text_area(
+    label="",
+    height=120,
+    placeholder="Type your SQL-related question here...",
+    key="user_input_box"
+)
 
 # ✅ Input Processing
 user_input = user_question.strip().lower()
