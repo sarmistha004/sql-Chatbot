@@ -207,6 +207,6 @@ st.markdown("""
             font-family: "Comic Sans MS", cursive;
             margin: 0;
             text-shadow: 0 0 8px #FF69B4, 0 0 12px #FF69B4;
-        '>Created By SARMISTHA SEN</p>
+        '>Created By Sarmistha Sen</p>
     </div>
 """, unsafe_allow_html=True)
