@@ -58,7 +58,7 @@ SQL query:
 
     return response.choices[0].message.content.strip().strip("`")
 
-# ✅ Execute SQL and return formatted response
+# ✅ Execute SQL and return formatted response (HIDES SQL)
 def execute_sql_and_respond(sql_query):
     try:
         cursor.execute(sql_query)
@@ -87,19 +87,24 @@ hide_streamlit_ui = """
 """
 st.markdown(hide_streamlit_ui, unsafe_allow_html=True)
 
-st.title("🧠 SQL Chatbot with OpenAI + MySQL")
-st.markdown("Ask any question related to your database:")
+# ✅ Styled Title and Subtitle
+st.markdown("""
+    <h1 style='font-size: 32px;'>🧠 SQL Chatbot with OpenAI + MySQL</h1>
+    <p style='font-size: 22px; font-weight: bold;'>Ask any question related to your database:</p>
+""", unsafe_allow_html=True)
 
-# ✅ Input from user
-user_question = st.text_input("💬 Enter your question:")
+# ✅ Styled Input Label
+st.markdown("<p style='font-size:20px;'>💬 <b>Enter your question:</b></p>", unsafe_allow_html=True)
+user_question = st.text_input("")
 
+# ✅ Process Input
 user_input = user_question.strip().lower()
 
 if user_input == "":
     st.warning("⚠️ Please ask a valid question related to your database.")
 
 elif user_input in ["hi", "hello", "hey"]:
-    st.success("👋 Hi! How can I help you?")
+    st.success("👋 Hello! How can I help you?")
 
 elif "thank" in user_input:
     st.success("🙏 You're welcome! I'm always here to help you when you need.")
@@ -108,6 +113,6 @@ else:
     schema = get_schema(cursor)
     with st.spinner("⏳ Generating and executing SQL query..."):
         sql = generate_sql_query(user_question, schema)
-        
         answer = execute_sql_and_respond(sql)
         st.markdown(answer)
+
