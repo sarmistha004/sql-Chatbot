@@ -77,8 +77,8 @@ def execute_sql_and_respond(sql_query):
 # ✅ Streamlit App UI
 st.set_page_config(page_title="DataWhiz - SQL Chatbot", layout="centered")
 
-# 🧽 Hide Streamlit header, footer, and menu
-hide_streamlit_ui = """
+# 🧽 Custom Styles
+st.markdown("""
     <style>
     header {visibility: hidden;}
     footer {visibility: hidden;}
@@ -89,8 +89,7 @@ hide_streamlit_ui = """
         min-height: 100px !important;
     }
     </style>
-"""
-st.markdown(hide_streamlit_ui, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # ✅ Stylish Title
 st.markdown("""
@@ -98,37 +97,40 @@ st.markdown("""
     <p style='font-size: 22px; font-weight: bold;'>Ask anything about your MySQL database below:</p>
 """, unsafe_allow_html=True)
 
-# ✅ Input Area
-st.markdown("<p style='font-size:20px;'>💬 <b>Enter your question:</b></p>", unsafe_allow_html=True)
+# ✅ Layout: Text area + Search button
+col1, col2 = st.columns([6, 1])
+with col1:
+    user_question = st.text_area(
+        label="",
+        height=100,
+        placeholder="Type your SQL-related question here...",
+        key="user_input_box"
+    )
+with col2:
+    search_clicked = st.button("🔍", help="Click to search", use_container_width=True)
 
-user_question = st.text_area(
-    label="",
-    height=120,
-    placeholder="Type your SQL-related question here...",
-    key="user_input_box"
-)
+# ✅ Input Handling
+if search_clicked:
+    user_input = user_question.strip().lower()
 
-# ✅ Input Processing
-user_input = user_question.strip().lower()
+    if user_input == "":
+        st.warning("⚠️ Please ask a valid question related to your database.")
 
-if user_input == "":
-    st.warning("⚠️ Please ask a valid question related to your database.")
+    elif user_input in ["hi", "hello", "hey"]:
+        st.markdown("<p style='font-size:24px; color:green;'>👋 <b>Hello!</b> How can I help you?</p>", unsafe_allow_html=True)
 
-elif user_input in ["hi", "hello", "hey"]:
-    st.markdown("<p style='font-size:24px; color:green;'>👋 <b>Hello!</b> How can I help you?</p>", unsafe_allow_html=True)
+    elif "thank" in user_input:
+        st.markdown("<p style='font-size:24px; color:#2E8B57;'>🙏 You're welcome! I'm always here to help you when you need.</p>", unsafe_allow_html=True)
 
-elif "thank" in user_input:
-    st.markdown("<p style='font-size:24px; color:#2E8B57;'>🙏 You're welcome! I'm always here to help you when you need.</p>", unsafe_allow_html=True)
+    else:
+        schema = get_schema(cursor)
+        with st.spinner("⏳ Generating and executing SQL query..."):
+            sql = generate_sql_query(user_question, schema)
+            answer = execute_sql_and_respond(sql)
 
-else:
-    schema = get_schema(cursor)
-    with st.spinner("⏳ Generating and executing SQL query..."):
-        sql = generate_sql_query(user_question, schema)
-        answer = execute_sql_and_respond(sql)
-
-        # ✅ Display final result with bigger font
-        st.markdown(f"""
-        <div style='font-size: 24px; font-family: "Segoe UI", sans-serif; color: #333; line-height: 1.6;'>
-        {answer}
-        </div>
-        """, unsafe_allow_html=True)
+            # ✅ Show answer in larger font
+            st.markdown(f"""
+            <div style='font-size: 24px; font-family: "Segoe UI", sans-serif; color: #333; line-height: 1.6;'>
+            {answer}
+            </div>
+            """, unsafe_allow_html=True)
