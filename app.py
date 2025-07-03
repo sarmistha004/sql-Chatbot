@@ -3,7 +3,7 @@ import mysql.connector
 import openai
 import os
 
-# 🔐 Load OpenAI API key
+# 🔐 Load OpenAI API key (from env or Streamlit secrets)
 openai.api_key = os.getenv("OPENAI_API_KEY") or st.secrets.get("OPENAI_API_KEY")
 
 # ✅ Connect to MySQL
@@ -66,14 +66,13 @@ def execute_sql_and_respond(sql_query):
         if not results:
             return "🤷 No data found for your query."
 
-        response = "<div style='font-size:24px;'>📊 Result:<br>"
+        response = "📊 Result:\n"
         for row in results:
-            response += " • " + ", ".join(str(i) for i in row) + "<br>"
-        response += "</div>"
-        return response
+            response += " • " + ", ".join(str(i) for i in row) + "\n"
+        return response.strip()
 
     except Exception as e:
-        return f"<div style='font-size:24px; color:red;'>❌ SQL Error: {str(e)}</div>"
+        return f"❌ SQL Error: {str(e)}"
 
 # ✅ Streamlit App UI
 st.set_page_config(page_title="DataWhiz - SQL Chatbot", layout="centered")
@@ -99,35 +98,37 @@ st.markdown("""
     <p style='font-size: 22px; font-weight: bold;'>Ask anything about your MySQL database below:</p>
 """, unsafe_allow_html=True)
 
-# ✅ Input Area with Search button and label fix
+# ✅ Input Area
 st.markdown("<p style='font-size:20px;'>💬 <b>Enter your question:</b></p>", unsafe_allow_html=True)
+
 user_question = st.text_area(
-    label="Ask a SQL-related question",
-    label_visibility="collapsed",
+    label="",
     height=120,
     placeholder="Type your SQL-related question here...",
     key="user_input_box"
 )
 
-# ✅ Add Search Button
-search = st.button("🔍 Search")
-
 # ✅ Input Processing
-if search:
-    user_input = user_question.strip().lower()
+user_input = user_question.strip().lower()
 
-    if user_input == "":
-        st.warning("⚠️ Please ask a valid question related to your database.")
+if user_input == "":
+    st.warning("⚠️ Please ask a valid question related to your database.")
 
-    elif user_input in ["hi", "hello", "hey"]:
-        st.markdown("<p style='font-size:24px; color:green;'>👋 <b>Hello!</b> How can I help you?</p>", unsafe_allow_html=True)
+elif user_input in ["hi", "hello", "hey"]:
+    st.markdown("<p style='font-size:24px; color:green;'>👋 <b>Hello!</b> How can I help you?</p>", unsafe_allow_html=True)
 
-    elif "thank" in user_input:
-        st.markdown("<p style='font-size:24px; color:#2E8B57;'>🙏 You're welcome! I'm always here to help you when you need.</p>", unsafe_allow_html=True)
+elif "thank" in user_input:
+    st.markdown("<p style='font-size:24px; color:#2E8B57;'>🙏 You're welcome! I'm always here to help you when you need.</p>", unsafe_allow_html=True)
 
-    else:
-        schema = get_schema(cursor)
-        with st.spinner("⏳ Generating and executing SQL query..."):
-            sql = generate_sql_query(user_question, schema)
-            answer = execute_sql_and_respond(sql)
-            st.markdown(answer, unsafe_allow_html=True)
+else:
+    schema = get_schema(cursor)
+    with st.spinner("⏳ Generating and executing SQL query..."):
+        sql = generate_sql_query(user_question, schema)
+        answer = execute_sql_and_respond(sql)
+
+        # ✅ Display final result with bigger font
+        st.markdown(f"""
+        <div style='font-size: 24px; font-family: "Segoe UI", sans-serif; color: #333; line-height: 1.6;'>
+        {answer}
+        </div>
+        """, unsafe_allow_html=True)
