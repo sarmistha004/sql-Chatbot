@@ -108,6 +108,6 @@ else:
     schema = get_schema(cursor)
     with st.spinner("⏳ Generating and executing SQL query..."):
         sql = generate_sql_query(user_question, schema)
-        st.code(sql, language="sql")
+        
         answer = execute_sql_and_respond(sql)
         st.markdown(answer)
