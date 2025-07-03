@@ -154,4 +154,19 @@ if search:
             sql = generate_sql_query(displayed_question, schema)
             answer = execute_sql_and_respond(sql)
             st.markdown(answer, unsafe_allow_html=True)
+            
+# ✅ Footer Credit
+st.markdown("""
+    <style>
+    .footer {
+        position: fixed;
+        bottom: 10px;
+        left: 10px;
+        font-size: 24px;
+        color: hotpink;
+        font-family: 'Segoe UI', sans-serif;
+    }
+    </style>
+    <div class="footer">Created By Sarmistha</div>
+""", unsafe_allow_html=True)
 
