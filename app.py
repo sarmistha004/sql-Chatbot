@@ -78,6 +78,16 @@ def execute_sql_and_respond(sql_query):
 # ✅ Streamlit App UI
 st.set_page_config(page_title="DataWhiz - SQL Chatbot", layout="centered")
 
+# 🎨 Add Background Gradient
+background_style = """
+<style>
+body {
+    background: linear-gradient(to right, #ffe6f0, #e6ccff);
+}
+</style>
+"""
+st.markdown(background_style, unsafe_allow_html=True)
+
 # 🧽 Hide header/footer + custom CSS
 hide_streamlit_ui = """
     <style>
@@ -182,7 +192,20 @@ if search:
 
 # ✅ Footer
 st.markdown("""
-    <div style='position: fixed; bottom: 10px; left: 20px;'>
-        <p style='font-size: 24px; color: deeppink; font-family: "Comic Sans MS", cursive;'>Created By Sarmistha</p>
+    <div style='
+        position: fixed; 
+        bottom: 10px; 
+        left: 20px; 
+        background-color: #f2ccff; 
+        padding: 6px 14px; 
+        border-radius: 10px;
+        box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+    '>
+        <p style='
+            font-size: 24px; 
+            color: hotpink; 
+            font-family: "Comic Sans MS", cursive; 
+            margin: 0;
+        '>Created By Sarmistha</p>
     </div>
 """, unsafe_allow_html=True)
