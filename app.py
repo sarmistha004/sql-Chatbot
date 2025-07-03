@@ -95,22 +95,18 @@ st.markdown(hide_streamlit_ui, unsafe_allow_html=True)
 
 # ✅ Stylish Title
 st.markdown("""
-    <div style='text-align:center;'>
-        <h1 style='font-size: 40px; color:#6C63FF;'>🤖 <span style="font-family:monospace;">DataWhiz</span> 💫</h1>
-        <p style='font-size: 18px; font-style: italic; color: #555;'>Your intelligent SQL assistant at your fingertips 🧠</p>
-        <p style='font-size: 22px; font-weight: bold;'>Ask anything about your MySQL database below:</p>
-    </div>
+    <h1 style='font-size: 40px; color:#6C63FF;'>🤖 <span style="font-family:monospace;">DataWhiz</span> 🌛</h1>
+    <p style='font-size: 24px; color: #FF8C00; font-weight: bold;'>Your intelligent SQL assistant at your fingertips 🧠</p>
+    <p style='font-size: 22px; font-weight: bold;'>Ask anything about your MySQL database below:</p>
 """, unsafe_allow_html=True)
 
 # ✅ Dropdown for sample questions
 sample_questions = [
-    "None",
     "How many users are there?",
     "List all users above age 30",
     "Show names and emails of all users",
     "What is the average age of users?",
-    "Show all users registered in June",
-    "How many users with name Sarmistha?"
+    "Show all users registered in June"
 ]
 
 st.markdown("<p style='font-size:20px;'>📜 <b>Select a sample question or type your own:</b></p>", unsafe_allow_html=True)
