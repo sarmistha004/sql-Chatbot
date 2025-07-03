@@ -3,7 +3,7 @@ import mysql.connector
 import openai
 import os
 
-# 🔐 Load OpenAI API key (from env or Streamlit secrets)
+# 🔐 Load OpenAI API key
 openai.api_key = os.getenv("OPENAI_API_KEY") or st.secrets.get("OPENAI_API_KEY")
 
 # ✅ Connect to MySQL
@@ -41,6 +41,7 @@ Only return the SQL query without explanation.
 
 When filtering strings in WHERE clause, always use:
 LOWER(TRIM(column)) LIKE LOWER('%value%') 
+instead of = or plain LIKE.
 
 Here is the database schema:
 {schema_str}
@@ -65,18 +66,19 @@ def execute_sql_and_respond(sql_query):
         if not results:
             return "🤷 No data found for your query."
 
-        response = "📊 Result:\n"
+        response = "<div style='font-size:24px;'>📊 Result:<br>"
         for row in results:
-            response += " • " + ", ".join(str(i) for i in row) + "\n"
-        return response.strip()
+            response += " • " + ", ".join(str(i) for i in row) + "<br>"
+        response += "</div>"
+        return response
 
     except Exception as e:
-        return f"❌ SQL Error: {str(e)}"
+        return f"<div style='font-size:24px; color:red;'>❌ SQL Error: {str(e)}</div>"
 
-# ✅ Streamlit UI
+# ✅ Streamlit App UI
 st.set_page_config(page_title="DataWhiz - SQL Chatbot", layout="centered")
 
-# ✅ Hide UI elements and style enhancements
+# 🧽 Hide Streamlit header, footer, and menu
 hide_streamlit_ui = """
     <style>
     header {visibility: hidden;}
@@ -85,52 +87,37 @@ hide_streamlit_ui = """
     textarea {
         font-size: 18px !important;
         padding: 10px !important;
-        min-height: 120px !important;
+        min-height: 100px !important;
     }
     </style>
 """
 st.markdown(hide_streamlit_ui, unsafe_allow_html=True)
 
-# ✅ Title and intro
+# ✅ Stylish Title
 st.markdown("""
-    <h1 style='font-size: 40px; color:#6C63FF;'>🤖 <span style="font-family:monospace;">DataWhiz</span> 🌛</h1>
+    <h1 style='font-size: 40px; color:#6C63FF;'>🤖 <span style="font-family:monospace;">DataWhiz</span> 💫</h1>
     <p style='font-size: 22px; font-weight: bold;'>Ask anything about your MySQL database below:</p>
 """, unsafe_allow_html=True)
 
-# ✅ Example dropdown
-examples = [
-    "How many users are older than 30?",
-    "List all users registered in June",
-    "Count of users named Riya",
-    "What are the email addresses of users under 25?"
-]
-
-example_choice = st.selectbox("🔹 Choose an example question (optional):", ["--- Select ---"] + examples)
-
-# ✅ Input Area
+# ✅ Input Area with Search button and label fix
+st.markdown("<p style='font-size:20px;'>💬 <b>Enter your question:</b></p>", unsafe_allow_html=True)
 user_question = st.text_area(
-    label="Your SQL Question",
+    label="Ask a SQL-related question",
     label_visibility="collapsed",
     height=120,
     placeholder="Type your SQL-related question here...",
-    key="user_input_box",
-    value=example_choice if example_choice != "--- Select ---" else ""
+    key="user_input_box"
 )
 
-# ✅ Buttons
-col1, col2 = st.columns([1, 1])
-submit = col1.button("🤮 Search")
-clear = col2.button("❌ Clear")
+# ✅ Add Search Button
+search = st.button("🔍 Search")
 
-# ✅ Logic
-if clear:
-    st.experimental_rerun()
-
-if submit:
+# ✅ Input Processing
+if search:
     user_input = user_question.strip().lower()
 
     if user_input == "":
-        st.warning("⚠️ Please enter a valid question.")
+        st.warning("⚠️ Please ask a valid question related to your database.")
 
     elif user_input in ["hi", "hello", "hey"]:
         st.markdown("<p style='font-size:24px; color:green;'>👋 <b>Hello!</b> How can I help you?</p>", unsafe_allow_html=True)
@@ -143,8 +130,4 @@ if submit:
         with st.spinner("⏳ Generating and executing SQL query..."):
             sql = generate_sql_query(user_question, schema)
             answer = execute_sql_and_respond(sql)
-            st.markdown(f"""
-            <div style='font-size: 24px; font-family: "Segoe UI", sans-serif; color: #333; line-height: 1.6;'>
-            {answer}
-            </div>
-            """, unsafe_allow_html=True)
+            st.markdown(answer, unsafe_allow_html=True)
