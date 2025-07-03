@@ -190,22 +190,23 @@ if search:
             answer = execute_sql_and_respond(sql)
             st.markdown(answer, unsafe_allow_html=True)
 
-# ✅ Footer
+# ✅ Footer with darker background and glowing text
 st.markdown("""
     <div style='
-        position: fixed; 
-        bottom: 10px; 
-        left: 20px; 
-        background-color: #f2ccff; 
-        padding: 6px 14px; 
-        border-radius: 10px;
-        box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+        position: fixed;
+        bottom: 10px;
+        left: 20px;
+        background-color: #C71585;
+        padding: 12px 20px;
+        border-radius: 12px;
+        box-shadow: 0 0 15px #C71585;
     '>
         <p style='
-            font-size: 24px; 
-            color: hotpink; 
-            font-family: "Comic Sans MS", cursive; 
+            font-size: 24px;
+            color: white;
+            font-family: "Comic Sans MS", cursive;
             margin: 0;
-        '>Created By Sarmistha</p>
+            text-shadow: 0 0 8px #FF69B4, 0 0 12px #FF69B4;
+        '>Created By SARMISTHA SEN</p>
     </div>
 """, unsafe_allow_html=True)
