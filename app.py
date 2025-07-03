@@ -104,10 +104,10 @@ if user_input == "":
     st.warning("⚠️ Please ask a valid question related to your database.")
 
 elif user_input in ["hi", "hello", "hey"]:
-    st.success("👋 Hello! How can I help you?")
+    st.markdown("<p style='font-size:24px; color:green;'>👋 <b>Hello!</b> How can I help you?</p>", unsafe_allow_html=True)
 
 elif "thank" in user_input:
-    st.success("🙏 You're welcome! I'm always here to help you when you need.")
+    st.markdown("<p style='font-size:24px; color:#2E8B57;'>🙏 You're welcome! I'm always here to help you when you need.</p>", unsafe_allow_html=True)
 
 else:
     schema = get_schema(cursor)
