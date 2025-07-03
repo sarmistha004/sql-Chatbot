@@ -217,7 +217,7 @@ st.markdown("""
         box-shadow: 0 0 15px #C71585;
     '>
         <p style='
-            font-size: 24px;
+            font-size: 22px;
             color: white;
             font-family: "Comic Sans MS", cursive;
             margin: 0;
