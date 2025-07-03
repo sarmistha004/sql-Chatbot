@@ -89,7 +89,7 @@ st.markdown(hide_streamlit_ui, unsafe_allow_html=True)
 
 # ✅ Styled Title and Subtitle
 st.markdown("""
-    <h1 style='font-size: 32px;'>🧠 SQL Chatbot with OpenAI + MySQL</h1>
+    <h1 style='font-size: 40px;'>🧠 SQL Chatbot with OpenAI + MySQL</h1>
     <p style='font-size: 22px; font-weight: bold;'>Ask any question related to your database:</p>
 """, unsafe_allow_html=True)
 
