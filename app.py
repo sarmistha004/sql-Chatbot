@@ -125,4 +125,10 @@ else:
     with st.spinner("⏳ Generating and executing SQL query..."):
         sql = generate_sql_query(user_question, schema)
         answer = execute_sql_and_respond(sql)
-        st.markdown(answer)
+
+        # ✅ Display final result with bigger font
+        st.markdown(f"""
+        <div style='font-size: 20px; font-family: "Segoe UI", sans-serif; color: #333; line-height: 1.6;'>
+        {answer}
+        </div>
+        """, unsafe_allow_html=True)
