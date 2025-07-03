@@ -3,7 +3,7 @@ import mysql.connector
 import openai
 import os
 
-# 🔐 Load OpenAI API key (from env or Streamlit secrets)
+# 🔐 Load OpenAI API key
 openai.api_key = os.getenv("OPENAI_API_KEY") or st.secrets.get("OPENAI_API_KEY")
 
 # ✅ Connect to MySQL
@@ -66,19 +66,20 @@ def execute_sql_and_respond(sql_query):
         if not results:
             return "🤷 No data found for your query."
 
-        response = "📊 Result:\n"
+        response = "<div style='font-size:24px;'>📊 Result:<br>"
         for row in results:
-            response += " • " + ", ".join(str(i) for i in row) + "\n"
-        return response.strip()
+            response += " • " + ", ".join(str(i) for i in row) + "<br>"
+        response += "</div>"
+        return response
 
     except Exception as e:
-        return f"❌ SQL Error: {str(e)}"
+        return f"<div style='font-size:24px; color:red;'>❌ SQL Error: {str(e)}</div>"
 
 # ✅ Streamlit App UI
 st.set_page_config(page_title="DataWhiz - SQL Chatbot", layout="centered")
 
-# 🧽 Custom Styles
-st.markdown("""
+# 🧽 Hide Streamlit header, footer, and menu
+hide_streamlit_ui = """
     <style>
     header {visibility: hidden;}
     footer {visibility: hidden;}
@@ -89,29 +90,49 @@ st.markdown("""
         min-height: 100px !important;
     }
     </style>
-""", unsafe_allow_html=True)
+"""
+st.markdown(hide_streamlit_ui, unsafe_allow_html=True)
 
 # ✅ Stylish Title
 st.markdown("""
-    <h1 style='font-size: 40px; color:#6C63FF;'>🤖 <span style="font-family:monospace;">DataWhiz</span> 💫</h1>
-    <p style='font-size: 22px; font-weight: bold;'>Ask anything about your MySQL database below:</p>
+    <div style='text-align:center;'>
+        <h1 style='font-size: 40px; color:#6C63FF;'>🤖 <span style="font-family:monospace;">DataWhiz</span> 💫</h1>
+        <p style='font-size: 18px; font-style: italic; color: #555;'>Your intelligent SQL assistant at your fingertips 🧠</p>
+        <p style='font-size: 22px; font-weight: bold;'>Ask anything about your MySQL database below:</p>
+    </div>
 """, unsafe_allow_html=True)
 
-# ✅ Layout: Text area + Search button
-col1, col2 = st.columns([6, 1])
-with col1:
-    user_question = st.text_area(
-        label="",
-        height=100,
-        placeholder="Type your SQL-related question here...",
-        key="user_input_box"
-    )
-with col2:
-    search_clicked = st.button("🔍", help="Click to search", use_container_width=True)
+# ✅ Dropdown for sample questions
+sample_questions = [
+    "How many users are there?",
+    "List all users above age 30",
+    "Show names and emails of all users",
+    "What is the average age of users?",
+    "Show all users registered in June"
+]
 
-# ✅ Input Handling
-if search_clicked:
-    user_input = user_question.strip().lower()
+st.markdown("<p style='font-size:20px;'>📜 <b>Select a sample question or type your own:</b></p>", unsafe_allow_html=True)
+
+selected_question = st.selectbox("Choose a question", sample_questions)
+
+# ✅ Text input for custom questions
+user_question = st.text_area(
+    label="Ask a SQL-related question",
+    label_visibility="collapsed",
+    height=120,
+    placeholder="Or type your own SQL-related question here...",
+    key="user_input_box"
+)
+
+# If user types something, it overrides the selected one
+displayed_question = user_question if user_question.strip() else selected_question
+
+# ✅ Search Button
+search = st.button("🔍 Search")
+
+# ✅ Input Processing
+if search:
+    user_input = displayed_question.strip().lower()
 
     if user_input == "":
         st.warning("⚠️ Please ask a valid question related to your database.")
@@ -125,12 +146,7 @@ if search_clicked:
     else:
         schema = get_schema(cursor)
         with st.spinner("⏳ Generating and executing SQL query..."):
-            sql = generate_sql_query(user_question, schema)
+            sql = generate_sql_query(displayed_question, schema)
             answer = execute_sql_and_respond(sql)
+            st.markdown(answer, unsafe_allow_html=True)
 
-            # ✅ Show answer in larger font
-            st.markdown(f"""
-            <div style='font-size: 24px; font-family: "Segoe UI", sans-serif; color: #333; line-height: 1.6;'>
-            {answer}
-            </div>
-            """, unsafe_allow_html=True)
