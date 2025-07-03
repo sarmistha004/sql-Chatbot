@@ -164,6 +164,21 @@ user_question = st.text_area(
     key="user_input_box"
 )
 
+# ✅ JavaScript to clear text area on outside click
+st.markdown("""
+<script>
+document.addEventListener("click", function(e) {
+    const iframe = window.parent.document.querySelector('iframe');
+    const textArea = iframe?.contentWindow?.document.querySelector('textarea');
+
+    if (textArea && !textArea.contains(e.target)) {
+        textArea.value = '';
+        textArea.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+});
+</script>
+""", unsafe_allow_html=True)
+
 # Use typed input if available
 displayed_question = user_question if user_question.strip() else selected_question
 
