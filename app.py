@@ -186,7 +186,7 @@ if st.session_state.logged_in:
 
     # ✅ Input Processing
     if search:
-        q = user_question.strip() or st.session_state.selected_question
+        q = user_question.strip() or selected_question
         if not q or q == "None":
             st.warning("⚠️ Ask a valid question.")
         elif q.lower() in ["hi", "hello", "hey"]:
