@@ -106,6 +106,7 @@ if st.session_state.logged_in:
         <div style='text-align: center;'>
             <h1 style='font-size: 44px; color:#6C63FF; font-family:monospace;'>🤖 DataWhiz 💫</h1>
             <p style='font-size: 24px; color: deeppink; font-family: "Comic Sans MS", cursive; font-weight: bold;'>Your intelligent SQL assistant at your fingertips 🧠</p>
+            <p style='font-size: 22px; font-family: "Comic Sans MS", cursive; font-weight: bold;'>Ask anything about your MySQL database below:</p>
         </div>
     """, unsafe_allow_html=True)
 
@@ -159,22 +160,35 @@ if st.session_state.logged_in:
 
     # ✅ Chat UI
     sample_questions = [
-        "None", "How many users are there?", "List all users above age 30",
-        "Show names and emails of all users", "Show all users with name Sarmistha."
+        "None", "How many users are there?", "List all users above age 30", "What is the average age of users?",
+        "Show all users registered in June", "Show names and emails of all users", "Show all users with name Sarmistha."
     ]
+    st.markdown("<p style='font-size:20px; font-family: \"Comic Sans MS\", cursive;'>📜 <b>Select a sample question or type your own:</b></p>", unsafe_allow_html=True)
     st.selectbox("📜 Sample Questions", sample_questions, key="selected_question")
+    selected_question = st.selectbox("Choose a question", sample_questions)
     user_question = st.text_area("💬 Ask your SQL question")
 
+    # ✅ Text input for custom questions
+    user_question = st.text_area(
+        label="Ask a SQL-related question",
+        label_visibility="collapsed",
+        height=120,
+        placeholder="Or type your own SQL-related question here...",
+        key="user_input_box"
+    )
+
+    # ✅ Search Button
     search = st.button("🔍 Search")
 
+    # ✅ Input Processing
     if search:
         q = user_question.strip() or st.session_state.selected_question
         if not q or q == "None":
             st.warning("⚠️ Ask a valid question.")
-        elif q.lower() in ["hi", "hello"]:
-            st.markdown("👋 Hello! How can I help you?")
+        elif q.lower() in ["hi", "hello", "hey"]:
+            st.markdown("<p style='font-size:24px; color:green; font-family: \"Comic Sans MS\", cursive;'>👋 <b>Hello!</b> How can I help you?</p>", unsafe_allow_html=True)
         elif "thank" in q.lower():
-            st.markdown("🙏 You're welcome! I'm here whenever you need me.")
+            st.markdown("<p style='font-size:24px; color:#2E8B57; font-family: \"Comic Sans MS\", cursive;'>🙏 You're welcome! I'm always here to help you when you need.</p>", unsafe_allow_html=True)
         else:
             with st.spinner("⏳ Generating query..."):
                 schema = get_schema(cursor)
