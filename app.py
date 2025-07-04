@@ -28,7 +28,8 @@ if not st.session_state.logged_in:
         if username in users and users[username] == password:
             st.session_state.logged_in = True
             st.session_state.user = username
-            st.experimental_rerun()
+            st.session_state.page = "chatbot"  # Optional, used to track current page
+            st._rerun()  # ✅ Compatible rerun fallback
         else:
             st.error("❌ Invalid credentials. Try again.")
 
