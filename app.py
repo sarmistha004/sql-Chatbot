@@ -38,7 +38,6 @@ if not st.session_state.logged_in:
             st.session_state.logged_in = True
             st.session_state.user = username
             st.success(f"✅ Welcome, {username}!")
-            st.experimental_set_query_params(page="chatbot")  # Not necessary, optional
             st.toast("Loading Chatbot...", icon="💬")
         else:
             st.error("❌ Invalid credentials. Try again.")
