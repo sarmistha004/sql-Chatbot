@@ -169,8 +169,8 @@ if st.session_state.logged_in:
         "Show all users with name Sarmistha."
     ]
 
-    st.markdown("<p style='font-size:20px; font-family: \"Comic Sans MS\", cursive;'>📜 <b>Select a sample question or type your own:</b></p>", unsafe_allow_html=True)
-    selected_question = st.selectbox("Choose a question", sample_questions)
+    st.selectbox("📜 Sample Questions", sample_questions, key="selected_question")
+    user_question = st.text_area("💬 Ask your SQL question")
 
     # ✅ Text input for custom questions
     user_question = st.text_area(
