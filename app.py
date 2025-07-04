@@ -18,101 +18,90 @@ conn = mysql.connector.connect(
 )
 cursor = conn.cursor()
 
-# -------------------- USER CREDENTIALS --------------------
+# -------------------- LOGIN SYSTEM --------------------
 users = {
     "Sarmistha Sen": "sarmistha@123",
     "Dr. Surajit Sen": "surajit@123",
     "Mithu Sen": "mithu@123"
 }
 
-# -------------------- SESSION STATE --------------------
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
-# -------------------- CUSTOM CSS --------------------
-st.markdown("""
-<style>
-body {
-    background: linear-gradient(to right, #ffe6f0, #e6ccff);
-}
-header, footer, .css-15zrgzn {visibility: hidden;}
-textarea {
-    font-size: 18px !important;
-    padding: 10px !important;
-    font-family: 'Comic Sans MS', cursive;
-}
-.stButton > button {
-    font-family: 'Comic Sans MS', cursive;
-    font-size: 20px;
-    background-color: #6C63FF;
-    color: white;
-    border-radius: 8px;
-}
-.stButton > button:hover {
-    background-color: #483D8B;
-    transform: scale(1.05);
-    cursor: pointer;
-}
-.fade-in {
-    animation: fadeIn 1.5s ease-in-out;
-}
-@keyframes fadeIn {
-    from {opacity: 0;}
-    to {opacity: 1;}
-}
-.logout-button {
-    position: fixed;
-    top: 20px;
-    right: 25px;
-    background-color: #C71585;
-    padding: 8px 14px;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-family: 'Comic Sans MS', cursive;
-    box-shadow: 0 0 10px #C71585;
-}
-.logout-button:hover {
-    background-color: #8B0A50;
-    cursor: pointer;
-}
-</style>
-""", unsafe_allow_html=True)
-
-# -------------------- LOGIN PAGE --------------------
 if not st.session_state.logged_in:
-    with st.container():
-        st.markdown("<div class='fade-in'>", unsafe_allow_html=True)
-        st.title("🔐 Login to DataWhiz")
-        username = st.text_input("Username")
-        password = st.text_input("Password", type="password")
+    st.markdown("""
+        <style>
+        .login-box {
+            animation: fadeIn 2s ease-in-out;
+        }
+        @keyframes fadeIn {
+            0% {opacity: 0;}
+            100% {opacity: 1;}
+        }
+        </style>
+    """, unsafe_allow_html=True)
 
-        if st.button("Login"):
-            if username in users and users[username] == password:
-                st.session_state.logged_in = True
-                st.session_state.user = username
-                st.success(f"✅ Welcome, {username}!")
-                st.toast("Loading Chatbot...", icon="💬")
-            else:
-                st.error("❌ Invalid credentials. Try again.")
-        st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("<div class='login-box'>", unsafe_allow_html=True)
+    st.title("🔐 Login to DataWhiz")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+
+    if st.button("Login"):
+        if username in users and users[username] == password:
+            st.session_state.logged_in = True
+            st.session_state.user = username
+            st.success(f"✅ Welcome, {username}!")
+            st.toast("💬 Loading Chatbot...", icon="💬")
+            st.rerun()
+        else:
+            st.error("❌ Invalid credentials. Try again.")
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # -------------------- MAIN CHATBOT --------------------
 if st.session_state.logged_in:
 
-    # 🔓 Logout Button (top-right)
+    # ✅ Background & Styles
     st.markdown("""
-        <form action="/" method="post">
-            <button class="logout-button" onclick="fetch('/', {method: 'POST'}).then(() => window.location.reload()); return false;">
-                🚪 Logout
-            </button>
-        </form>
+        <style>
+        body { background: linear-gradient(to right, #ffe6f0, #e6ccff); }
+        header {visibility: hidden;}
+        footer {visibility: hidden;}
+        textarea {
+            font-size: 18px !important;
+            padding: 10px !important;
+            min-height: 100px !important;
+            font-family: 'Comic Sans MS', cursive;
+        }
+        .stButton > button {
+            font-family: 'Comic Sans MS', cursive;
+            font-size: 20px;
+            background-color: #6C63FF;
+            color: white;
+            border-radius: 8px;
+        }
+        .stButton > button:hover {
+            background-color: #483D8B;
+            transform: scale(1.05);
+            cursor: pointer;
+        }
+        .logout-button {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            z-index: 9999;
+        }
+        </style>
     """, unsafe_allow_html=True)
 
-    st.markdown("<div class='fade-in'>", unsafe_allow_html=True)
+    # ✅ Logout button top-right
+    st.markdown('<div class="logout-button">', unsafe_allow_html=True)
+    if st.button("🚪 Logout"):
+        st.session_state.logged_in = False
+        st.session_state.user = ""
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    # ✅ Title Section
+    # ✅ App Title
     st.markdown("""
         <div style='text-align: center;'>
             <h1 style='font-size: 44px; color:#6C63FF; font-family:monospace;'>🤖 DataWhiz 💫</h1>
@@ -120,7 +109,7 @@ if st.session_state.logged_in:
         </div>
     """, unsafe_allow_html=True)
 
-    # ✅ Functions
+    # ✅ Get Schema
     def get_schema(cursor):
         cursor.execute("SHOW TABLES;")
         tables = cursor.fetchall()
@@ -131,20 +120,21 @@ if st.session_state.logged_in:
             schema[table_name] = [col[0] for col in columns]
         return schema
 
+    # ✅ Generate SQL from GPT
     def generate_sql_query(user_question, schema_dict):
         schema_str = ""
         for table, cols in schema_dict.items():
             schema_str += f"Table {table} has columns: {', '.join(cols)}\n"
         prompt = f"""
-You are an expert SQL assistant. Based on the schema below, write a SQL query to answer the user's question.
-Use LOWER(TRIM(column)) LIKE LOWER('%value%') in WHERE clause.
+        You are an expert SQL assistant. Based on the schema below, write a SQL query to answer the user's question.
+        Use LOWER(TRIM(column)) LIKE LOWER('%value%') in WHERE clause.
 
-Schema:
-{schema_str}
+        Schema:
+        {schema_str}
 
-Question: {user_question}
-SQL query:
-"""
+        Question: {user_question}
+        SQL query:
+        """
         response = openai.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": prompt}],
@@ -152,6 +142,7 @@ SQL query:
         )
         return response.choices[0].message.content.strip().strip("`")
 
+    # ✅ Execute SQL
     def execute_sql_and_respond(sql_query):
         try:
             cursor.execute(sql_query)
@@ -166,7 +157,7 @@ SQL query:
         except Exception as e:
             return f"<div style='font-size:24px; color:red;'>❌ SQL Error: {str(e)}</div>"
 
-    # ✅ UI
+    # ✅ Chat UI
     sample_questions = [
         "None", "How many users are there?", "List all users above age 30",
         "Show names and emails of all users", "Show all users with name Sarmistha."
@@ -174,7 +165,9 @@ SQL query:
     st.selectbox("📜 Sample Questions", sample_questions, key="selected_question")
     user_question = st.text_area("💬 Ask your SQL question")
 
-    if st.button("🔍 Search"):
+    search = st.button("🔍 Search")
+
+    if search:
         q = user_question.strip() or st.session_state.selected_question
         if not q or q == "None":
             st.warning("⚠️ Ask a valid question.")
@@ -203,11 +196,3 @@ SQL query:
             <p style='font-size: 20px; color: white; font-family: "Comic Sans MS", cursive; margin: 0;'>Created By Sarmistha Sen</p>
         </div>
     """, unsafe_allow_html=True)
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-# 🔄 Reset session when logout is clicked
-if st.requested_url_query_params.get("logout") == "1":
-    st.session_state.logged_in = False
-    st.session_state.user = ""
-    st.experimental_rerun()
