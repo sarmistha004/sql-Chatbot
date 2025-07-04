@@ -211,7 +211,7 @@ if st.session_state.logged_in:
         else:
             with st.spinner("⏳ Generating SQL query..."):
                 schema = get_schema(cursor)
-                sql = generate_sql_query(q, schema)
+                sql = generate_sql_query(displayed_question, schema)
                 result = execute_sql_and_respond(sql)
                 st.markdown(result, unsafe_allow_html=True)
 
