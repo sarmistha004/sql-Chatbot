@@ -150,9 +150,21 @@ if st.session_state.logged_in:
         )
         return response.choices[0].message.content.strip().strip("`")
 
-    # ✅ Execute SQL
     def execute_sql_and_respond(sql_query):
         try:
+            # Intercept queries on login table to hide passwords
+            if "from login" in sql_query.lower() or "select * from login" in sql_query.lower():
+                cursor.execute("SELECT name FROM login;")  # Only fetch the 'name' column
+                results = cursor.fetchall()
+                if not results:
+                    return "🤷 No login users found."
+                response = "<div style='font-size:24px; font-family: \"Comic Sans MS\", cursive;'>👥 Login Users:<br>"
+                for row in results:
+                    response += " • " + str(row[0]) + "<br>"
+                response += "</div>"
+                return response
+
+            # Default execution
             cursor.execute(sql_query)
             results = cursor.fetchall()
             if not results:
@@ -162,8 +174,10 @@ if st.session_state.logged_in:
                 response += " • " + ", ".join(str(i) for i in row) + "<br>"
             response += "</div>"
             return response
+
         except Exception as e:
             return f"<div style='font-size:24px; color:red;'>❌ SQL Error: {str(e)}</div>"
+
 
     # ✅ Dropdown for sample questions
     sample_questions = [
