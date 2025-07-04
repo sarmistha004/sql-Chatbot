@@ -16,6 +16,38 @@ conn = mysql.connector.connect(
 )
 cursor = conn.cursor()
 
+# ✅ Login authentication
+def authenticate_user(username, password):
+    cursor.execute("SELECT password FROM login WHERE username = %s", (username,))
+    result = cursor.fetchone()
+    if result and result[0] == password:
+        return True
+    return False
+
+# ✅ Session state for login
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+if 'username' not in st.session_state:
+    st.session_state.username = ""
+
+# ✅ Login form
+if not st.session_state.logged_in:
+    st.markdown("<h1 style='text-align:center; color:#6C63FF;'>🔐 Login to DataWhiz</h1>", unsafe_allow_html=True)
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    if st.button("Login"):
+        if authenticate_user(username.strip(), password.strip()):
+            st.session_state.logged_in = True
+            st.session_state.username = username
+            st.success("✅ Login successful!")
+            st.experimental_rerun()
+        else:
+            st.error("❌ Invalid username or password.")
+    st.stop()
+
+# ✅ Continue only if logged in
+# -----------------------------
+
 # ✅ Get table schema
 def get_schema(cursor):
     cursor.execute("SHOW TABLES;")
@@ -36,7 +68,7 @@ def generate_sql_query(user_question, schema_dict):
     db_name = "sql12787470"
 
     prompt = f"""
-You are an expert SQL assistant working with a MySQL database named {db_name}. Based on the schema below, write a SQL query to answer the user's question.
+You are an expert SQL assistant working with a MySQL database named `{db_name}`. Based on the schema below, write a SQL query to answer the user's question.
 Only return the SQL query without explanation.
 
 When filtering strings in WHERE clause, always use:
@@ -56,7 +88,7 @@ SQL query:
         temperature=0
     )
 
-    return response.choices[0].message.content.strip().strip("")
+    return response.choices[0].message.content.strip().strip("`")
 
 # ✅ Execute SQL and return formatted response
 def execute_sql_and_respond(sql_query):
@@ -79,69 +111,56 @@ def execute_sql_and_respond(sql_query):
 st.set_page_config(page_title="DataWhiz - SQL Chatbot", layout="centered")
 
 # 🎨 Add Background Gradient
-background_style = """
+st.markdown("""
 <style>
 body {
     background: linear-gradient(to right, #ffe6f0, #e6ccff);
 }
+header {visibility: hidden;}
+footer {visibility: hidden;}
+.css-15zrgzn {display: none;}
+textarea {
+    font-size: 18px !important;
+    padding: 10px !important;
+    min-height: 100px !important;
+    font-family: 'Comic Sans MS', cursive;
+}
+.fade-in {
+    animation: fadeIn 2s ease-in;
+}
+@keyframes fadeIn {
+    0% {opacity: 0;}
+    100% {opacity: 1;}
+}
+.stButton > button {
+    font-family: 'Comic Sans MS', cursive;
+    font-size: 20px;
+    background-color: #6C63FF;
+    color: white;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+.stButton > button:hover {
+    background-color: #483D8B;
+    transform: scale(1.05);
+    cursor: pointer;
+}
 </style>
-"""
-st.markdown(background_style, unsafe_allow_html=True)
-
-# 🧽 Hide header/footer + custom CSS
-hide_streamlit_ui = """
-    <style>
-    header {visibility: hidden;}
-    footer {visibility: hidden;}
-    .css-15zrgzn {display: none;}
-    textarea {
-        font-size: 18px !important;
-        padding: 10px !important;
-        min-height: 100px !important;
-        font-family: 'Comic Sans MS', cursive;
-    }
-
-    /* ✨ Fade-in animation */
-    .fade-in {
-        animation: fadeIn 2s ease-in;
-    }
-
-    @keyframes fadeIn {
-        0% {opacity: 0;}
-        100% {opacity: 1;}
-    }
-
-    /* ✨ Search button hover effect */
-    .stButton > button {
-        font-family: 'Comic Sans MS', cursive;
-        font-size: 20px;
-        background-color: #6C63FF;
-        color: white;
-        border-radius: 8px;
-        transition: all 0.3s ease;
-    }
-
-    .stButton > button:hover {
-        background-color: #483D8B;
-        transform: scale(1.05);
-        cursor: pointer;
-    }
-    </style>
-"""
-st.markdown(hide_streamlit_ui, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # ✅ Centered Stylish Title with Tagline
-st.markdown("""
+st.markdown(f"""
     <div class='fade-in' style='text-align: center;'>
         <h1 style='font-size: 44px; color:#6C63FF; font-family:monospace;'>🤖 DataWhiz 💫</h1>
         <p style='font-size: 24px; color: deeppink; font-family: "Comic Sans MS", cursive; font-weight: bold;'>Your intelligent SQL assistant at your fingertips 🧠</p>
         <p style='font-size: 22px; font-family: "Comic Sans MS", cursive; font-weight: bold;'>Ask anything about your MySQL database below:</p>
+        <p style='font-size: 20px; color: #444;'>🧑 Logged in as: <b>{st.session_state.username}</b></p>
     </div>
     <br>
     <p style='font-size: 22px; font-family: "Comic Sans MS", cursive; font-weight: bold;'>💬 <b>Enter your question:</b></p>
 """, unsafe_allow_html=True)
 
-# ✅ Dropdown for sample questions
+# ✅ Sample Questions Dropdown
 sample_questions = [
     "None",
     "How many users are there?",
@@ -170,7 +189,6 @@ st.markdown("""
 document.addEventListener("click", function(e) {
     const iframe = window.parent.document.querySelector('iframe');
     const textArea = iframe?.contentWindow?.document.querySelector('textarea');
-
     if (textArea && !textArea.contains(e.target)) {
         textArea.value = '';
         textArea.dispatchEvent(new Event('input', { bubbles: true }));
@@ -179,25 +197,18 @@ document.addEventListener("click", function(e) {
 </script>
 """, unsafe_allow_html=True)
 
-# Use typed input if available
+# ✅ Final processing
 displayed_question = user_question if user_question.strip() else selected_question
-
-# ✅ Search Button
 search = st.button("🔍 Search")
 
-# ✅ Input Processing
 if search:
     user_input = displayed_question.strip().lower()
-
     if user_input == "" or user_input == "none":
         st.warning("⚠️ Please ask a valid question related to your database.")
-
     elif user_input in ["hi", "hello", "hey"]:
         st.markdown("<p style='font-size:24px; color:green; font-family: \"Comic Sans MS\", cursive;'>👋 <b>Hello!</b> How can I help you?</p>", unsafe_allow_html=True)
-
     elif "thank" in user_input:
         st.markdown("<p style='font-size:24px; color:#2E8B57; font-family: \"Comic Sans MS\", cursive;'>🙏 You're welcome! I'm always here to help you when you need.</p>", unsafe_allow_html=True)
-
     else:
         schema = get_schema(cursor)
         with st.spinner("⏳ Generating and executing SQL query..."):
@@ -205,7 +216,7 @@ if search:
             answer = execute_sql_and_respond(sql)
             st.markdown(answer, unsafe_allow_html=True)
 
-# ✅ Footer with darker background and glowing text
+# ✅ Footer
 st.markdown("""
     <div style='
         position: fixed;
