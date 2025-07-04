@@ -186,8 +186,12 @@ if st.session_state.logged_in:
 
     # ✅ Input Processing
     if search:
-        q = user_question.strip() or selected_question  
+        # Combine user question or selected question (if nothing typed)
+        q = user_question.strip()
+        if not q:
+            q = selected_question
 
+    # Now safely handle all conditions
     if not q or q.lower() == "none":
         st.warning("⚠️ Ask a valid question.")
 
