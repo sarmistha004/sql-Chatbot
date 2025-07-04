@@ -4,44 +4,34 @@ import openai
 import os
 import bcrypt
 
-# -----------------------------------------
-# 🔐 LOGIN SYSTEM SETUP (Step 2)
-# -----------------------------------------
-# Bcrypt-hashed passwords for 3 users
+# -------------------------------
+# 🔐 Step 1: Secure Login Section
+# -------------------------------
 users = {
-    "Sarmistha": b"$2b$12$4CN3Dw3s8lMvYVgJ8hPCNOKVZgy4rOkzck.H65mPek1PX58VSSxu2",  # password123
-    "Dr. Surajit": b"$2b$12$tjX4vrsRmzJvu5.TiQa02OxZkZMLovq7v8F/kEXUGRKskSvlzEyZG",  # drsurajit@321
-    "Mithu": b"$2b$12$1cbS8XZ46h0EM2fK.6MK4Ot0dCyecjpRCn3sAtHk3by0A4Nc7mUvK"         # mithu_456
+    "Sarmistha Sen": "$2b$12$WDtvWXf9GcpiUMjULynLDO4TVCOieSK/hExTXUnGrxT55qvoNPDiC",  # sarmistha@123
+    "Dr. Surajit": "$2b$12$ULckbTFTcIf3TPPSTbFbXep8r0yVzLVvnK2v.3xHVygncCxfJS6Fq",     # surajit@123
+    "Mithu": "$2b$12$80XZhTbVnfs0XcKEnrJrAeu93RwEQI.LPbZK0Sv6eAsUDaZ6MChru"            # mithu@123
 }
 
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-if "username" not in st.session_state:
-    st.session_state.username = ""
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
 
-def login():
-    st.set_page_config(page_title="Login | DataWhiz")
-    st.title("🔐 Login to DataWhiz")
+if not st.session_state.authenticated:
+    st.markdown("## 🔐 Login to DataWhiz")
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
+
     if st.button("Login"):
-        if username in users and bcrypt.checkpw(password.encode(), users[username]):
-            st.session_state.logged_in = True
-            st.session_state.username = username
-            st.success(f"Welcome, {username}!")
+        if username in users and bcrypt.checkpw(password.encode(), users[username].encode()):
+            st.session_state.authenticated = True
             st.experimental_rerun()
         else:
             st.error("Invalid username or password")
-
-if not st.session_state.logged_in:
-    login()
     st.stop()
 
-# -----------------------------------------
-# ✅ MAIN APP STARTS HERE AFTER LOGIN
-# -----------------------------------------
-
-# 🔐 Load OpenAI API key
+# -------------------------------
+# ✅ SQL Chatbot Code (After Login)
+# -------------------------------
 openai.api_key = os.getenv("OPENAI_API_KEY") or st.secrets.get("OPENAI_API_KEY")
 
 # ✅ Connect to MySQL
@@ -54,7 +44,6 @@ conn = mysql.connector.connect(
 )
 cursor = conn.cursor()
 
-# ✅ Get table schema
 def get_schema(cursor):
     cursor.execute("SHOW TABLES;")
     tables = cursor.fetchall()
@@ -65,7 +54,6 @@ def get_schema(cursor):
         schema[table_name] = [col[0] for col in columns]
     return schema
 
-# ✅ Generate SQL using GPT
 def generate_sql_query(user_question, schema_dict):
     schema_str = ""
     for table, cols in schema_dict.items():
@@ -96,7 +84,6 @@ SQL query:
 
     return response.choices[0].message.content.strip().strip("`")
 
-# ✅ Execute SQL and return formatted response
 def execute_sql_and_respond(sql_query):
     try:
         cursor.execute(sql_query)
@@ -113,19 +100,18 @@ def execute_sql_and_respond(sql_query):
     except Exception as e:
         return f"<div style='font-size:24px; color:red; font-family: \"Comic Sans MS\", cursive;'>❌ SQL Error: {str(e)}</div>"
 
-# ✅ Page Config
 st.set_page_config(page_title="DataWhiz - SQL Chatbot", layout="centered")
 
-# 🎨 Gradient Background
+# 🎨 Background gradient
 st.markdown("""
-    <style>
-    body {
-        background: linear-gradient(to right, #ffe6f0, #e6ccff);
-    }
-    </style>
+<style>
+body {
+    background: linear-gradient(to right, #ffe6f0, #e6ccff);
+}
+</style>
 """, unsafe_allow_html=True)
 
-# 🧽 Custom CSS
+# 🧽 Custom styling and animations
 st.markdown("""
     <style>
     header {visibility: hidden;}
@@ -164,8 +150,8 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ✅ Title and Instructions
-st.markdown(f"""
+# ✅ Title
+st.markdown("""
     <div class='fade-in' style='text-align: center;'>
         <h1 style='font-size: 44px; color:#6C63FF; font-family:monospace;'>🤖 DataWhiz 💫</h1>
         <p style='font-size: 24px; color: deeppink; font-family: "Comic Sans MS", cursive; font-weight: bold;'>Your intelligent SQL assistant at your fingertips 🧠</p>
@@ -175,7 +161,6 @@ st.markdown(f"""
     <p style='font-size: 22px; font-family: "Comic Sans MS", cursive; font-weight: bold;'>💬 <b>Enter your question:</b></p>
 """, unsafe_allow_html=True)
 
-# ✅ Dropdown + Text Area
 sample_questions = [
     "None",
     "How many users are there?",
@@ -197,7 +182,7 @@ user_question = st.text_area(
     key="user_input_box"
 )
 
-# ✅ Auto-clear on click outside (JS)
+# Clear text box on outside click
 st.markdown("""
 <script>
 document.addEventListener("click", function(e) {
@@ -211,18 +196,21 @@ document.addEventListener("click", function(e) {
 </script>
 """, unsafe_allow_html=True)
 
-# ✅ Final Display Logic
 displayed_question = user_question if user_question.strip() else selected_question
 search = st.button("🔍 Search")
 
 if search:
     user_input = displayed_question.strip().lower()
+
     if user_input == "" or user_input == "none":
         st.warning("⚠️ Please ask a valid question related to your database.")
+
     elif user_input in ["hi", "hello", "hey"]:
         st.markdown("<p style='font-size:24px; color:green; font-family: \"Comic Sans MS\", cursive;'>👋 <b>Hello!</b> How can I help you?</p>", unsafe_allow_html=True)
+
     elif "thank" in user_input:
         st.markdown("<p style='font-size:24px; color:#2E8B57; font-family: \"Comic Sans MS\", cursive;'>🙏 You're welcome! I'm always here to help you when you need.</p>", unsafe_allow_html=True)
+
     else:
         schema = get_schema(cursor)
         with st.spinner("⏳ Generating and executing SQL query..."):
