@@ -188,6 +188,9 @@ if st.session_state.logged_in:
         key="user_input_box"
     )
 
+    # Use typed input if available
+    displayed_question = user_question if user_question.strip() else selected_question
+
     # ✅ Search Button
     search = st.button("🔍 Search")
 
