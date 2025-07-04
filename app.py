@@ -2,36 +2,8 @@ import streamlit as st
 import mysql.connector
 import openai
 import os
-import bcrypt
 
-# -------------------------------
-# 🔐 Step 1: Secure Login Section
-# -------------------------------
-users = {
-    "Sarmistha Sen": "$2b$12$WDtvWXf9GcpiUMjULynLDO4TVCOieSK/hExTXUnGrxT55qvoNPDiC",  # sarmistha@123
-    "Dr. Surajit": "$2b$12$ULckbTFTcIf3TPPSTbFbXep8r0yVzLVvnK2v.3xHVygncCxfJS6Fq",     # surajit@123
-    "Mithu": "$2b$12$80XZhTbVnfs0XcKEnrJrAeu93RwEQI.LPbZK0Sv6eAsUDaZ6MChru"            # mithu@123
-}
-
-if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
-
-if not st.session_state.authenticated:
-    st.markdown("## 🔐 Login to DataWhiz")
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-
-    if st.button("Login"):
-        if username in users and bcrypt.checkpw(password.encode(), users[username].encode()):
-            st.session_state.authenticated = True
-            st.experimental_rerun()
-        else:
-            st.error("Invalid username or password")
-    st.stop()
-
-# -------------------------------
-# ✅ SQL Chatbot Code (After Login)
-# -------------------------------
+# 🔐 Load OpenAI API key
 openai.api_key = os.getenv("OPENAI_API_KEY") or st.secrets.get("OPENAI_API_KEY")
 
 # ✅ Connect to MySQL
@@ -44,6 +16,7 @@ conn = mysql.connector.connect(
 )
 cursor = conn.cursor()
 
+# ✅ Get table schema
 def get_schema(cursor):
     cursor.execute("SHOW TABLES;")
     tables = cursor.fetchall()
@@ -54,6 +27,7 @@ def get_schema(cursor):
         schema[table_name] = [col[0] for col in columns]
     return schema
 
+# ✅ Generate SQL using GPT
 def generate_sql_query(user_question, schema_dict):
     schema_str = ""
     for table, cols in schema_dict.items():
@@ -62,7 +36,7 @@ def generate_sql_query(user_question, schema_dict):
     db_name = "sql12787470"
 
     prompt = f"""
-You are an expert SQL assistant working with a MySQL database named `{db_name}`. Based on the schema below, write a SQL query to answer the user's question.
+You are an expert SQL assistant working with a MySQL database named {db_name}. Based on the schema below, write a SQL query to answer the user's question.
 Only return the SQL query without explanation.
 
 When filtering strings in WHERE clause, always use:
@@ -82,8 +56,9 @@ SQL query:
         temperature=0
     )
 
-    return response.choices[0].message.content.strip().strip("`")
+    return response.choices[0].message.content.strip().strip("")
 
+# ✅ Execute SQL and return formatted response
 def execute_sql_and_respond(sql_query):
     try:
         cursor.execute(sql_query)
@@ -100,19 +75,21 @@ def execute_sql_and_respond(sql_query):
     except Exception as e:
         return f"<div style='font-size:24px; color:red; font-family: \"Comic Sans MS\", cursive;'>❌ SQL Error: {str(e)}</div>"
 
+# ✅ Streamlit App UI
 st.set_page_config(page_title="DataWhiz - SQL Chatbot", layout="centered")
 
-# 🎨 Background gradient
-st.markdown("""
+# 🎨 Add Background Gradient
+background_style = """
 <style>
 body {
     background: linear-gradient(to right, #ffe6f0, #e6ccff);
 }
 </style>
-""", unsafe_allow_html=True)
+"""
+st.markdown(background_style, unsafe_allow_html=True)
 
-# 🧽 Custom styling and animations
-st.markdown("""
+# 🧽 Hide header/footer + custom CSS
+hide_streamlit_ui = """
     <style>
     header {visibility: hidden;}
     footer {visibility: hidden;}
@@ -124,6 +101,7 @@ st.markdown("""
         font-family: 'Comic Sans MS', cursive;
     }
 
+    /* ✨ Fade-in animation */
     .fade-in {
         animation: fadeIn 2s ease-in;
     }
@@ -133,6 +111,7 @@ st.markdown("""
         100% {opacity: 1;}
     }
 
+    /* ✨ Search button hover effect */
     .stButton > button {
         font-family: 'Comic Sans MS', cursive;
         font-size: 20px;
@@ -148,9 +127,10 @@ st.markdown("""
         cursor: pointer;
     }
     </style>
-""", unsafe_allow_html=True)
+"""
+st.markdown(hide_streamlit_ui, unsafe_allow_html=True)
 
-# ✅ Title
+# ✅ Centered Stylish Title with Tagline
 st.markdown("""
     <div class='fade-in' style='text-align: center;'>
         <h1 style='font-size: 44px; color:#6C63FF; font-family:monospace;'>🤖 DataWhiz 💫</h1>
@@ -161,6 +141,7 @@ st.markdown("""
     <p style='font-size: 22px; font-family: "Comic Sans MS", cursive; font-weight: bold;'>💬 <b>Enter your question:</b></p>
 """, unsafe_allow_html=True)
 
+# ✅ Dropdown for sample questions
 sample_questions = [
     "None",
     "How many users are there?",
@@ -174,6 +155,7 @@ sample_questions = [
 st.markdown("<p style='font-size:20px; font-family: \"Comic Sans MS\", cursive;'>📜 <b>Select a sample question or type your own:</b></p>", unsafe_allow_html=True)
 selected_question = st.selectbox("Choose a question", sample_questions)
 
+# ✅ Text input for custom questions
 user_question = st.text_area(
     label="Ask a SQL-related question",
     label_visibility="collapsed",
@@ -182,12 +164,13 @@ user_question = st.text_area(
     key="user_input_box"
 )
 
-# Clear text box on outside click
+# ✅ JavaScript to clear text area on outside click
 st.markdown("""
 <script>
 document.addEventListener("click", function(e) {
     const iframe = window.parent.document.querySelector('iframe');
     const textArea = iframe?.contentWindow?.document.querySelector('textarea');
+
     if (textArea && !textArea.contains(e.target)) {
         textArea.value = '';
         textArea.dispatchEvent(new Event('input', { bubbles: true }));
@@ -196,9 +179,13 @@ document.addEventListener("click", function(e) {
 </script>
 """, unsafe_allow_html=True)
 
+# Use typed input if available
 displayed_question = user_question if user_question.strip() else selected_question
+
+# ✅ Search Button
 search = st.button("🔍 Search")
 
+# ✅ Input Processing
 if search:
     user_input = displayed_question.strip().lower()
 
@@ -218,7 +205,7 @@ if search:
             answer = execute_sql_and_respond(sql)
             st.markdown(answer, unsafe_allow_html=True)
 
-# ✅ Footer
+# ✅ Footer with darker background and glowing text
 st.markdown("""
     <div style='
         position: fixed;
