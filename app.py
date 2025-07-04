@@ -126,16 +126,23 @@ if st.session_state.logged_in:
         schema_str = ""
         for table, cols in schema_dict.items():
             schema_str += f"Table {table} has columns: {', '.join(cols)}\n"
+
+        db_name = "sql12787470"
+        
         prompt = f"""
-        You are an expert SQL assistant. Based on the schema below, write a SQL query to answer the user's question.
-        Use LOWER(TRIM(column)) LIKE LOWER('%value%') in WHERE clause.
+    You are an expert SQL assistant working with a MySQL database named {db_name}. Based on the schema below, write a SQL query to answer the user's question.
+    Only return the SQL query without explanation.
 
-        Schema:
-        {schema_str}
+    When filtering strings in WHERE clause, always use:
+    LOWER(TRIM(column)) LIKE LOWER('%value%') 
+    instead of = or plain LIKE.
 
-        Question: {user_question}
-        SQL query:
-        """
+    Here is the database schema:
+    {schema_str}
+
+    Question: {user_question}
+    SQL query:
+    """
         response = openai.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": prompt}],
@@ -184,19 +191,20 @@ if st.session_state.logged_in:
     # ✅ Search Button
     search = st.button("🔍 Search")
 
+    # ✅ Input Processing
     if search:
-        q = user_question.strip() if user_question.strip() else selected_question
+        user_input = displayed_question.strip().lower()
 
-    if not q or q.lower() == "none":
-        st.warning("⚠️ Ask a valid question.")
-    elif "number of tables" in q.lower():
-        schema = get_schema(cursor)
-        table_count = len(schema)
-        st.markdown(f"📦 The database has **{table_count}** tables.")
-    elif q.lower() in ["hi", "hello", "hey"]:
-        st.markdown("👋 Hello! How can I help you?")
-    elif "thank" in q.lower():
-        st.markdown("🙏 You're welcome! I'm here whenever you need me.")
+    if user_input == "" or user_input == "none":
+        st.warning("⚠️ Please ask a valid question related to your database.")
+
+    elif user_input in ["hi", "hello", "hey"]:
+        st.markdown("<p style='font-size:24px; color:green; font-family: \"Comic Sans MS\", cursive;'>👋 <b>Hello!</b> How can I help you?</p>", unsafe_allow_html=True)
+
+    elif "thank" in user_input:
+        st.markdown("<p style='font-size:24px; color:#2E8B57; font-family: \"Comic Sans MS\", cursive;'>🙏 You're welcome! I'm always here to help you when you need.</p>", unsafe_allow_html=True)
+
+
     else:
         with st.spinner("⏳ Generating SQL query..."):
             schema = get_schema(cursor)
