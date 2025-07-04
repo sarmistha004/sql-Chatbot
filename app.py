@@ -184,12 +184,11 @@ if st.session_state.logged_in:
     # ✅ Search Button
     search = st.button("🔍 Search")
 
-    # ✅ Input Processing
+   # ✅ Input Processing
     if search:
-        # Combine user question or selected question (if nothing typed)
-        q = user_question.strip()
-        if not q:
-            q = selected_question
+        # Combine user input or selected question
+        user_input = user_question.strip()
+        q = user_input if user_input else selected_question
 
     # Now safely handle all conditions
     if not q or q.lower() == "none":
@@ -212,6 +211,7 @@ if st.session_state.logged_in:
             sql = generate_sql_query(q, schema)
             result = execute_sql_and_respond(sql)
             st.markdown(result, unsafe_allow_html=True)
+
 
 
     # ✅ Footer
