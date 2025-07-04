@@ -185,14 +185,8 @@ if st.session_state.logged_in:
     search = st.button("🔍 Search")
 
     if search:
-        # Get selected question and user input
-        user_input = user_question.strip()
-        selected_question = selected_question if selected_question else "None"
-    
-    # Safely assign q
-    q = user_input if user_input else selected_question
+        q = user_question.strip() if user_question.strip() else selected_question
 
-    # ✅ Handle all cases safely
     if not q or q.lower() == "none":
         st.warning("⚠️ Ask a valid question.")
     elif "number of tables" in q.lower():
@@ -209,6 +203,7 @@ if st.session_state.logged_in:
             sql = generate_sql_query(q, schema)
             result = execute_sql_and_respond(sql)
             st.markdown(result, unsafe_allow_html=True)
+
 
 
 
