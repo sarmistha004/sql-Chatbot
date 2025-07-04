@@ -170,7 +170,6 @@ if st.session_state.logged_in:
     ]
 
     st.selectbox("📜 Sample Questions", sample_questions, key="selected_question")
-    user_question = st.text_area("💬 Ask your SQL question")
 
     # ✅ Text input for custom questions
     user_question = st.text_area(
