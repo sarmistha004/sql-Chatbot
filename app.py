@@ -184,34 +184,28 @@ if st.session_state.logged_in:
     # ✅ Search Button
     search = st.button("🔍 Search")
 
-   # ✅ Input Processing
     if search:
-        # Combine user input or selected question
+        # Safely get user input
         user_input = user_question.strip()
         q = user_input if user_input else selected_question
 
-    # Now safely handle all conditions
+    # ✅ Handle greetings and custom logic first
     if not q or q.lower() == "none":
         st.warning("⚠️ Ask a valid question.")
-
     elif "number of tables" in q.lower():
-        cursor.execute("SHOW TABLES;")
-        tables = cursor.fetchall()
-        st.markdown(f"<p style='font-size:24px;'>📊 <b>Result:</b><br> • {len(tables)}</p>", unsafe_allow_html=True)
-
+        schema = get_schema(cursor)
+        table_count = len(schema)
+        st.markdown(f"📦 The database has **{table_count}** tables.")
     elif q.lower() in ["hi", "hello", "hey"]:
-        st.markdown("<p style='font-size:24px; color:green; font-family: \"Comic Sans MS\", cursive;'>👋 <b>Hello!</b> How can I help you?</p>", unsafe_allow_html=True)
-
+        st.markdown("👋 Hello! How can I help you?")
     elif "thank" in q.lower():
-        st.markdown("<p style='font-size:24px; color:#2E8B57; font-family: \"Comic Sans MS\", cursive;'>🙏 You're welcome! I'm always here to help you when you need.</p>", unsafe_allow_html=True)
-
+        st.markdown("🙏 You're welcome! I'm here whenever you need me.")
     else:
-        with st.spinner("⏳ Generating query..."):
+        with st.spinner("⏳ Generating SQL query..."):
             schema = get_schema(cursor)
             sql = generate_sql_query(q, schema)
             result = execute_sql_and_respond(sql)
             st.markdown(result, unsafe_allow_html=True)
-
 
 
     # ✅ Footer
