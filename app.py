@@ -158,15 +158,19 @@ if st.session_state.logged_in:
         except Exception as e:
             return f"<div style='font-size:24px; color:red;'>❌ SQL Error: {str(e)}</div>"
 
-    # ✅ Chat UI
+    # ✅ Dropdown for sample questions
     sample_questions = [
-        "None", "How many users are there?", "List all users above age 30", "What is the average age of users?",
-        "Show all users registered in June", "Show names and emails of all users", "Show all users with name Sarmistha."
+        "None",
+        "How many users are there?",
+        "List all users above age 30",
+        "Show names and emails of all users",
+        "What is the average age of users?",
+        "Show all users registered in June",
+        "Show all users with name Sarmistha."
     ]
+
     st.markdown("<p style='font-size:20px; font-family: \"Comic Sans MS\", cursive;'>📜 <b>Select a sample question or type your own:</b></p>", unsafe_allow_html=True)
-    st.selectbox("📜 Sample Questions", sample_questions, key="selected_question")
     selected_question = st.selectbox("Choose a question", sample_questions)
-    user_question = st.text_area("💬 Ask your SQL question")
 
     # ✅ Text input for custom questions
     user_question = st.text_area(
