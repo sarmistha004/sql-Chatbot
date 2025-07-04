@@ -198,22 +198,22 @@ if st.session_state.logged_in:
     if search:
         user_input = displayed_question.strip().lower()
 
-    if user_input == "" or user_input == "none":
-        st.warning("⚠️ Please ask a valid question related to your database.")
+        if user_input == "" or user_input == "none":
+            st.warning("⚠️ Please ask a valid question related to your database.")
 
-    elif user_input in ["hi", "hello", "hey"]:
-        st.markdown("<p style='font-size:24px; color:green; font-family: \"Comic Sans MS\", cursive;'>👋 <b>Hello!</b> How can I help you?</p>", unsafe_allow_html=True)
+        elif user_input in ["hi", "hello", "hey"]:
+            st.markdown("<p style='font-size:24px; color:green; font-family: \"Comic Sans MS\", cursive;'>👋 <b>Hello!</b> How can I help you?</p>", unsafe_allow_html=True)
 
-    elif "thank" in user_input:
-        st.markdown("<p style='font-size:24px; color:#2E8B57; font-family: \"Comic Sans MS\", cursive;'>🙏 You're welcome! I'm always here to help you when you need.</p>", unsafe_allow_html=True)
+        elif "thank" in user_input:
+            st.markdown("<p style='font-size:24px; color:#2E8B57; font-family: \"Comic Sans MS\", cursive;'>🙏 You're welcome! I'm always here to help you when you need.</p>", unsafe_allow_html=True)
 
 
-    else:
-        with st.spinner("⏳ Generating SQL query..."):
-            schema = get_schema(cursor)
-            sql = generate_sql_query(q, schema)
-            result = execute_sql_and_respond(sql)
-            st.markdown(result, unsafe_allow_html=True)
+        else:
+            with st.spinner("⏳ Generating SQL query..."):
+                schema = get_schema(cursor)
+                sql = generate_sql_query(q, schema)
+                result = execute_sql_and_respond(sql)
+                st.markdown(result, unsafe_allow_html=True)
 
 
 
