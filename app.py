@@ -6,6 +6,7 @@ import pandas as pd
 from io import BytesIO
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+import plotly.express as px
 
 
 # -------------------- CONFIG --------------------
@@ -186,6 +187,23 @@ if st.session_state.logged_in:
             return {"html": f"<div style='font-size:24px; color:red;'>❌ SQL Error: {str(e)}</div>", "data": [], "columns": []}
 
 
+    def display_and_download_chart(df):
+        if df.empty:
+            return
+
+        chart = px.bar(df, x=df.columns[0], y=df.columns[1], title="📊 Auto-generated Chart")
+        st.plotly_chart(chart)
+
+        # Export chart to PNG (bytes)
+        img_bytes = chart.to_image(format="png")
+        st.download_button(
+            label="🖼️ Download Chart as PNG",
+            data=img_bytes,
+            file_name="chart.png",
+            mime="image/png"
+        )
+
+
     # ✅ Dropdown for sample questions
     sample_questions = [
         "None",
@@ -239,6 +257,11 @@ if st.session_state.logged_in:
                 # Store the query result in session for download
                 st.session_state.query_data = sql_result['data']
                 st.session_state.query_headers = sql_result['columns']
+
+                # ✅ Show and allow download of chart if valid
+                df_result = pd.DataFrame(sql_result['data'], columns=sql_result['columns'])
+                if len(df_result.columns) >= 2 and pd.api.types.is_numeric_dtype(df_result[df_result.columns[1]]):
+                    display_and_download_chart(df_result)
 
                 # ✅ Download Buttons
                 st.markdown("### 📥 Download Report:")
