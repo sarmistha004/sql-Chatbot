@@ -194,15 +194,17 @@ if st.session_state.logged_in:
         chart = px.bar(df, x=df.columns[0], y=df.columns[1], title="📊 Auto-generated Chart")
         st.plotly_chart(chart)
 
-        # Export chart to PNG (bytes)
-        img_bytes = chart.to_image(format="png")
-        st.download_button(
-            label="🖼️ Download Chart as PNG",
-            data=img_bytes,
-            file_name="chart.png",
-            mime="image/png"
-        )
-
+        # 🔁 Handle PNG download safely
+        try:
+            img_bytes = chart.to_image(format="png")
+            st.download_button(
+                label="🖼️ Download Chart as PNG",
+                data=img_bytes,
+                file_name="chart.png",
+                mime="image/png"
+            )
+        except Exception as e:
+            st.warning("⚠️ Chart image could not be generated. Ensure Kaleido is installed.")
 
     # ✅ Dropdown for sample questions
     sample_questions = [
