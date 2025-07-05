@@ -2,6 +2,11 @@ import streamlit as st
 import mysql.connector
 import openai
 import os
+import pandas as pd
+from io import BytesIO
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+
 
 # -------------------- CONFIG --------------------
 st.set_page_config(page_title="DataWhiz - SQL Chatbot", layout="centered")
@@ -156,27 +161,29 @@ if st.session_state.logged_in:
             if "from login" in sql_query.lower() or "select * from login" in sql_query.lower():
                 cursor.execute("SELECT name FROM login;")  # Only fetch the 'name' column
                 results = cursor.fetchall()
-                if not results:
-                    return "🤷 No login users found."
-                response = "<div style='font-size:24px; font-family: \"Comic Sans MS\", cursive;'>👥 Login Users:<br>"
+                html = "<div style='font-size:24px; font-family: \"Comic Sans MS\", cursive;'>👥 Login Users:<br>"
                 for row in results:
-                    response += " • " + str(row[0]) + "<br>"
-                response += "</div>"
-                return response
+                    html += " • " + str(row[0]) + "<br>"
+                html += "</div>"
+                return {"html": html, "data": results, "columns": ["name"]}
 
             # Default execution
             cursor.execute(sql_query)
             results = cursor.fetchall()
+            columns = [desc[0] for desc in cursor.description]  # Get column names
+
             if not results:
-                return "🤷 No data found."
-            response = "<div style='font-size:24px; font-family: \"Comic Sans MS\", cursive;'>📊 Result:<br>"
+                return {"html": "🤷 No data found.", "data": [], "columns": []}
+
+            html = "<div style='font-size:24px; font-family: \"Comic Sans MS\", cursive;'>📊 Result:<br>"
             for row in results:
-                response += " • " + ", ".join(str(i) for i in row) + "<br>"
-            response += "</div>"
-            return response
+                html += " • " + ", ".join(str(i) for i in row) + "<br>"
+            html += "</div>"
+
+            return {"html": html, "data": results, "columns": columns}
 
         except Exception as e:
-            return f"<div style='font-size:24px; color:red;'>❌ SQL Error: {str(e)}</div>"
+            return {"html": f"<div style='font-size:24px; color:red;'>❌ SQL Error: {str(e)}</div>", "data": [], "columns": []}
 
 
     # ✅ Dropdown for sample questions
@@ -226,7 +233,48 @@ if st.session_state.logged_in:
             with st.spinner("⏳ Generating SQL query..."):
             schema = get_schema(cursor)
             sql = generate_sql_query(displayed_question, schema)
-            result = execute_sql_and_respond(sql)
+            sql_result = execute_sql_and_respond(sql)
+            st.markdown(sql_result['html'], unsafe_allow_html=True)
+
+            # Store the query result in session for download
+            st.session_state.query_data = sql_result['data']
+            st.session_state.query_headers = sql_result['columns']
+
+            # ✅ Download Buttons
+            st.markdown("### 📥 Download Report:")
+            col1, col2 = st.columns(2)
+
+            with col1:
+                if st.button("⬇️ Download as CSV"):
+                    df = pd.DataFrame(st.session_state.query_data, columns=st.session_state.query_headers)
+                    csv = df.to_csv(index=False).encode('utf-8')
+                    st.download_button("📄 Save CSV", csv, "query_result.csv", "text/csv", key="csv_download")
+
+            with col2:
+                if st.button("⬇️ Download as PDF"):
+                    buffer = BytesIO()
+                    pdf = canvas.Canvas(buffer, pagesize=letter)
+                    pdf.setFont("Helvetica", 12)
+                    y = 750
+                    pdf.drawString(30, y, "📊 Query Result Report")
+                    y -= 30
+
+                    # Table headers
+                    pdf.drawString(30, y, " | ".join(st.session_state.query_headers))
+                    y -= 20
+
+                    for row in st.session_state.query_data:
+                        row_str = " | ".join(str(item) for item in row)
+                        pdf.drawString(30, y, row_str)
+                        y -= 20
+                        if y < 50:
+                            pdf.showPage()
+                            y = 750
+
+                    pdf.save()
+                    buffer.seek(0)
+                    st.download_button("📄 Save PDF", buffer, file_name="query_result.pdf", mime="application/pdf", key="pdf_download")
+
 
             # ✅ Save to query_history
             insert_query = """
@@ -236,7 +284,7 @@ if st.session_state.logged_in:
             cursor.execute(insert_query, (st.session_state.user, displayed_question, sql))
             conn.commit()
 
-            st.markdown(result, unsafe_allow_html=True)
+            # st.markdown(result, unsafe_allow_html=True)
 
 
     # ✅ Footer
