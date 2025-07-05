@@ -224,12 +224,19 @@ if st.session_state.logged_in:
 
         else:
             with st.spinner("⏳ Generating SQL query..."):
-                schema = get_schema(cursor)
-                sql = generate_sql_query(displayed_question, schema)
-                result = execute_sql_and_respond(sql)
-                st.markdown(result, unsafe_allow_html=True)
+            schema = get_schema(cursor)
+            sql = generate_sql_query(displayed_question, schema)
+            result = execute_sql_and_respond(sql)
 
+            # ✅ Save to query_history
+            insert_query = """
+                INSERT INTO query_history (username, user_question, generated_sql)
+                VALUES (%s, %s, %s)
+            """
+            cursor.execute(insert_query, (st.session_state.user, displayed_question, sql))
+            conn.commit()
 
+            st.markdown(result, unsafe_allow_html=True)
 
 
     # ✅ Footer
