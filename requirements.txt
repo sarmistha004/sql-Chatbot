@@ -4,5 +4,5 @@ openai
 bcrypt
 pandas
 reportlab
-plotly
-kaleido
+plotly==5.18.0
+kaleido==0.2.1
