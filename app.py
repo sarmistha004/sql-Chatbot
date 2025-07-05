@@ -7,6 +7,7 @@ from io import BytesIO
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import plotly.express as px
+import plotly.io as pio
 
 
 # -------------------- CONFIG --------------------
@@ -196,6 +197,7 @@ if st.session_state.logged_in:
 
         # 🔁 Handle PNG download safely
         try:
+            st.write("Kaleido engine available:", pio.renderers.default)
             img_bytes = chart.to_image(format="png")
             st.download_button(
                 label="🖼️ Download Chart as PNG",
