@@ -245,35 +245,35 @@ if st.session_state.logged_in:
                 col1, col2 = st.columns(2)
 
                 with col1:
-                    if st.button("⬇️ Download as CSV"):
-                        df = pd.DataFrame(st.session_state.query_data, columns=st.session_state.query_headers)
-                        csv = df.to_csv(index=False).encode('utf-8')
-                        st.download_button("📄 Save CSV", csv, "query_result.csv", "text/csv", key="csv_download")
+                    df = pd.DataFrame(st.session_state.query_data, columns=st.session_state.query_headers)
+                    csv = df.to_csv(index=False).encode('utf-8')
+                    st.toast("✅ Download ready!", icon="📄")
+                    st.download_button("📄 Save CSV", csv, "query_result.csv", "text/csv", key="csv_download")
 
                 with col2:
-                    if st.button("⬇️ Download as PDF"):
-                        buffer = BytesIO()
-                        pdf = canvas.Canvas(buffer, pagesize=letter)
-                        pdf.setFont("Helvetica", 12)
-                        y = 750
-                        pdf.drawString(30, y, "📊 Query Result Report")
-                        y -= 30
+                    buffer = BytesIO()
+                    pdf = canvas.Canvas(buffer, pagesize=letter)
+                    pdf.setFont("Helvetica", 12)
+                    y = 750
+                    pdf.drawString(30, y, "📊 Query Result Report")
+                    y -= 30
 
-                        # Table headers
-                        pdf.drawString(30, y, " | ".join(st.session_state.query_headers))
+                    # Table headers
+                    pdf.drawString(30, y, " | ".join(st.session_state.query_headers))
+                    y -= 20
+
+                    for row in st.session_state.query_data:
+                        row_str = " | ".join(str(item) for item in row)
+                        pdf.drawString(30, y, row_str)
                         y -= 20
+                        if y < 50:
+                          pdf.showPage()
+                          y = 750
 
-                        for row in st.session_state.query_data:
-                            row_str = " | ".join(str(item) for item in row)
-                            pdf.drawString(30, y, row_str)
-                            y -= 20
-                            if y < 50:
-                                pdf.showPage()
-                                y = 750
-
-                        pdf.save()
-                        buffer.seek(0)
-                        st.download_button("📄 Save PDF", buffer, file_name="query_result.pdf", mime="application/pdf", key="pdf_download")
+                    pdf.save()
+                    buffer.seek(0)
+                    st.toast("✅ Download ready!", icon="📄")
+                    st.download_button("📄 Save PDF", buffer, file_name="query_result.pdf", mime="application/pdf", key="pdf_download")
 
 
             # ✅ Save to query_history
