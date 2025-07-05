@@ -4,3 +4,5 @@ openai
 bcrypt
 pandas
 reportlab
+plotly
+kaleido
