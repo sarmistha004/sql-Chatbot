@@ -19,9 +19,9 @@ openai.api_key = os.getenv("OPENAI_API_KEY") or st.secrets.get("OPENAI_API_KEY")
 conn = mysql.connector.connect(
     host='sql12.freesqldatabase.com',
     port=3306,
-    user='sql12787470',
-    password='Tbsv7vtsVi',
-    database='sql12787470'
+    user='sql12788636',        
+    password='iUrFUcRZjb',     
+    database='sql12788636'
 )
 cursor = conn.cursor()
 
@@ -134,7 +134,7 @@ if st.session_state.logged_in:
         for table, cols in schema_dict.items():
             schema_str += f"Table {table} has columns: {', '.join(cols)}\n"
 
-        db_name = "sql12787470"
+        db_name = "sql12788636"
         
         prompt = f"""
     You are an expert SQL assistant working with a MySQL database named {db_name}. Based on the schema below, write a SQL query to answer the user's question.
