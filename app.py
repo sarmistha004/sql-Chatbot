@@ -29,7 +29,8 @@ cursor = conn.cursor()
 users = {
     "Sarmistha Sen": "sarmistha@123",
     "Dr.Surajit Sen": "surajit@123",
-    "Mithu Sen": "mithu@123"
+    "Mithu Sen": "mithu@123",
+    "Admin": admin@123
 }
 
 if "logged_in" not in st.session_state:
