@@ -19,9 +19,9 @@ openai.api_key = os.getenv("OPENAI_API_KEY") or st.secrets.get("OPENAI_API_KEY")
 conn = mysql.connector.connect(
     host='sql12.freesqldatabase.com',
     port=3306,
-    user='sql12788636',        
-    password='iUrFUcRZjb',     
-    database='sql12788636'
+    user='sql12789825',        
+    password='QFHEeX2hwG',     
+    database='sql12789825'
 )
 cursor = conn.cursor()
 
